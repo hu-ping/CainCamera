@@ -1,4 +1,4 @@
-package com.cgfay.cameralibrary.fragment;
+package com.example.beautydemo.fragment;
 
 import android.Manifest;
 import android.app.Activity;
