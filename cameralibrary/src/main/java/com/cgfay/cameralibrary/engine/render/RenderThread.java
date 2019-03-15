@@ -273,7 +273,12 @@ class RenderThread extends HandlerThread implements SurfaceTexture.OnFrameAvaila
             mTextureWidth = mCameraParam.previewWidth;
             mTextureHeight = mCameraParam.previewHeight;
         }
+
+        Log.e(TAG, "mTextureWidth == " + mTextureWidth + ", mTextureHeight == " +  mTextureHeight);
+
         mRenderManager.setTextureSize(mTextureWidth, mTextureHeight);
+
+        return;
     }
 
     /**

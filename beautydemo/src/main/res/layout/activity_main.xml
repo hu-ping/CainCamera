@@ -12,32 +12,42 @@
         android:orientation="vertical"
         android:layout_gravity="center"
         android:gravity="center">
+
+
+
+        <EditText android:id="@+id/activation_input_edit_text"
+            android:layout_width="wrap_content"
+            android:layout_height="60dip"
+            android:layout_margin="10dp"
+            android:minWidth="250dip"
+            android:hint="输入人脸sdk激活码"/>
+
         <Button
             android:id="@+id/btn_camera"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/dp5"
             android:background="@android:color/transparent"
-            android:textColor="@color/white"
+            android:textColor="@color/black"
             android:text="@string/btn_camera"/>
 
-        <Button
-            android:id="@+id/btn_edit_video"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/dp5"
-            android:background="@android:color/transparent"
-            android:textColor="@color/white"
-            android:text="@string/btn_edit_video"/>
+        <!--<Button-->
+            <!--android:id="@+id/btn_edit_video"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_margin="@dimen/dp5"-->
+            <!--android:background="@android:color/transparent"-->
+            <!--android:textColor="@color/white"-->
+            <!--android:text="@string/btn_edit_video"/>-->
 
-        <Button
-            android:id="@+id/btn_edit_picture"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/dp5"
-            android:background="@android:color/transparent"
-            android:textColor="@color/white"
-            android:text="@string/btn_edit_picture"/>
+        <!--<Button-->
+            <!--android:id="@+id/btn_edit_picture"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_margin="@dimen/dp5"-->
+            <!--android:background="@android:color/transparent"-->
+            <!--android:textColor="@color/white"-->
+            <!--android:text="@string/btn_edit_picture"/>-->
 
     </LinearLayout>
 

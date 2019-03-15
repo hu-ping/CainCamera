@@ -6,13 +6,13 @@
     tools:context=".fragment.CameraPreviewFragment">
 
     <!-- 预览视图 -->
-    <com.cgfay.cameralibrary.widget.AspectFrameLayout
+    <com.example.beautydemo.widget.AspectFrameLayout
         android:id="@+id/layout_aspect"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/white"
         android:layout_gravity="top">
-    </com.cgfay.cameralibrary.widget.AspectFrameLayout>
+    </com.example.beautydemo.widget.AspectFrameLayout>
 
     <!-- 顶部视图 -->
     <include
@@ -28,20 +28,19 @@
     </FrameLayout>
 
     <!-- 底部按钮 -->
-    <include
-        layout="@layout/view_preview_bottom"/>
+    <include layout="@layout/view_preview_bottom" />
 
 
-    <!-- fps 提示 -->
-    <TextView
-        android:id="@+id/tv_fps"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end"
-        android:layout_marginTop="@dimen/fps_margin_top"
-        android:layout_marginEnd="@dimen/fps_margin_end"
-        android:textColor="@android:color/holo_orange_dark"
-        android:layout_marginRight="@dimen/fps_margin_end" />
+    <!--&lt;!&ndash; fps 提示 &ndash;&gt;-->
+    <!--<TextView-->
+        <!--android:id="@+id/tv_fps"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_gravity="end"-->
+        <!--android:layout_marginTop="@dimen/fps_margin_top"-->
+        <!--android:layout_marginEnd="@dimen/fps_margin_end"-->
+        <!--android:textColor="@android:color/holo_orange_dark"-->
+        <!--android:layout_marginRight="@dimen/fps_margin_end" />-->
 
 
 

@@ -17,6 +17,7 @@ import com.cgfay.filterlibrary.glfilter.stickers.bean.DynamicSticker;
 import com.cgfay.utilslibrary.utils.BitmapUtils;
 
 import java.io.File;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -155,6 +156,9 @@ public class SmartBeautyResource {
         }
     }
 
+    public static void saveBitmap(String filePath, ByteBuffer buffer, int width, int height) {
+        BitmapUtils.saveBitmap(filePath,buffer,width, height);
+    }
 
 
 

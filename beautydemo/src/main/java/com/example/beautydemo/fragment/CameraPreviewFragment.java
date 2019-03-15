@@ -2,10 +2,7 @@ package com.example.beautydemo.fragment;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
@@ -15,12 +12,13 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.text.TextUtils;
+
 import android.util.Log;
+import android.util.Size;
 import android.util.TypedValue;
-import android.view.Gravity;
+
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
+
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -30,6 +28,9 @@ import android.widget.TextView;
 import com.example.beautydemo.R;
 import com.example.beautydemo.camera.CameraEngine;
 import com.example.beautydemo.camera.CameraParam;
+import com.example.beautydemo.face.FaceTracker;
+import com.example.beautydemo.face.FaceTrackerCallback;
+import com.example.beautydemo.util.PathConstraints;
 import com.example.beautydemo.util.PermissionConfirmDialogFragment;
 import com.example.beautydemo.util.PermissionErrorDialogFragment;
 import com.example.beautydemo.util.PermissionUtils;
@@ -38,11 +39,10 @@ import com.example.beautydemo.widget.CainSurfaceView;
 import com.example.beautydemo.widget.HorizontalIndicatorView;
 import com.example.beautydemo.widget.ShutterButton;
 import com.smart.smartbeauty.api.SmartBeautyRender;
+import com.smart.smartbeauty.api.SmartBeautyResource;
 
-import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -99,18 +99,13 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
     private Button mBtnRecordDelete;
     // 视频预览按钮
     private Button mBtnRecordPreview;
-    // 相机类型指示器
-    private HorizontalIndicatorView mBottomIndicator;
-    // 相机类型指示文字
-    private List<String> mIndicatorText = new ArrayList<String>();
-    // 合并对话框
-    private CombineVideoDialogFragment mCombineDialog;
+
+
     // 主线程Handler
     private Handler mMainHandler;
     // 持有该Fragment的Activity，onAttach/onDetach中绑定/解绑，主要用于解决getActivity() = null的情况
     private Activity mActivity;
-    // 页面跳转监听器
-    private OnPageOperationListener mPageListener;
+
     // 贴纸资源页面
     private PreviewResourceFragment mResourcesFragment;
     // 滤镜页面
@@ -118,8 +113,14 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
 
     private SurfaceTexture mCameraSurfaceTexture = null;
 
+    private String mActivationCode = "xx-xx-xx" ;
+
     public CameraPreviewFragment() {
         mCameraParam = CameraParam.getInstance();
+    }
+
+    public void setActivationCode(String code) {
+        mActivationCode = code;
     }
 
     @Override
@@ -144,9 +145,24 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // 初始化相机渲染引擎
 
+        // 初始化资源文件
+        initResources();
+        // 初始化相机渲染引擎
         SmartBeautyRender.getInstance().initRenderer(mActivity);
+
+    }
+
+    /**
+     * 初始化动态贴纸、滤镜等资源
+     */
+    private void initResources() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                SmartBeautyResource.initResources(mActivity);
+            }
+        }).start();
     }
 
     @Nullable
@@ -182,8 +198,6 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
         // 绑定需要渲染的SurfaceView
         SmartBeautyRender.getInstance().setSurfaceView(mCameraSurfaceView);
         SmartBeautyRender.getInstance().setRenderListener(mRenderListener);
-
-
 
 
 
@@ -224,7 +238,7 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
     @Override
     public void onResume() {
         super.onResume();
-        registerHomeReceiver();
+//        registerHomeReceiver();
         mBtnShutter.setEnableOpened(false);
     }
 
@@ -233,7 +247,7 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
     @Override
     public void onPause() {
         super.onPause();
-        unRegisterHomeReceiver();
+//        unRegisterHomeReceiver();
         hideStickerView();
         hideEffectView();
         mBtnShutter.setEnableOpened(false);
@@ -247,13 +261,12 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
 
     @Override
     public void onDestroy() {
-        mPageListener = null;
         // 销毁人脸检测器
         releaseFaceTracker();
+
         // 关掉渲染引擎
         SmartBeautyRender.getInstance().destroyRenderer();
-        // 清理关键点
-        LandmarkEngine.getInstance().clearAll();
+
 
         super.onDestroy();
     }
@@ -352,9 +365,24 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
 
     private SmartBeautyRender.ISmartRenderListener mRenderListener = new SmartBeautyRender.ISmartRenderListener() {
         @Override
-        public void onRenderFinish(SurfaceTexture cameraSurfaceTexture) {
+        public Size onRenderCreated(SurfaceTexture cameraSurfaceTexture) {
             mCameraSurfaceTexture = cameraSurfaceTexture;
             openCamera();
+
+            int textureWidth = 0;
+            int textureHeight = 0;
+            if (mCameraParam.orientation == 90 || mCameraParam.orientation == 270) {
+                textureWidth = mCameraParam.previewHeight;
+                textureHeight = mCameraParam.previewWidth;
+            } else {
+                textureWidth = mCameraParam.previewWidth;
+                textureHeight = mCameraParam.previewHeight;
+            }
+            return new Size(textureWidth, textureHeight);
+        }
+
+        @Override
+        public void onRenderFinish() {
             startPreview();
         }
 
@@ -372,24 +400,30 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
         releaseCamera();
         CameraEngine.getInstance().openCamera(mActivity);
         CameraEngine.getInstance().setPreviewSurface(mCameraSurfaceTexture);
-        CameraEngine.getInstance().setPreviewCallbackWithBuffer(new Camera.PreviewCallback() {
-            @Override
-            public void onPreviewFrame(byte[] data, Camera camera) {
-
-                // 人脸检测
-                FaceTracker.getInstance().trackFace(data,
-                        mCameraParam.previewWidth, mCameraParam.previewHeight);
+        CameraEngine.getInstance().setPreviewCallbackWithBuffer(mCameraPreviewCallback);
 
 
-                // 请求刷新
-                SmartBeautyRender.getInstance().drawFrame();
-            }
-
-        });
 
         // 相机打开回调,开始人脸
         prepareTracker();
     }
+
+    private Camera.PreviewCallback mCameraPreviewCallback = new Camera.PreviewCallback() {
+        @Override
+        public void onPreviewFrame(byte[] data, Camera camera) {
+            // 人脸检测
+//            FaceTracker.getInstance().trackFace(data,
+//                    mCameraParam.previewWidth, mCameraParam.previewHeight);
+
+            if (CameraParam.getInstance().previewBuffer  != null) {
+                camera.addCallbackBuffer(CameraParam.getInstance().previewBuffer);
+            }
+
+            // 请求刷新
+            SmartBeautyRender.getInstance().requestRender();
+
+        }
+    };
 
     /**
      * 开始预览
@@ -478,7 +512,6 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
     private void hideBottomLayout() {
         mBtnEffect.setVisibility(View.GONE);
         mBtnStickers.setVisibility(View.GONE);
-        mBottomIndicator.setVisibility(View.GONE);
         ViewGroup.LayoutParams layoutParams = mBtnShutter.getLayoutParams();
         layoutParams.width = (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 60, mActivity.getResources().getDisplayMetrics());
@@ -501,7 +534,6 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
         mBtnShutter.setLayoutParams(layoutParams);
         mBtnEffect.setVisibility(View.VISIBLE);
         mBtnStickers.setVisibility(View.VISIBLE);
-        mBottomIndicator.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -509,20 +541,19 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
      */
     private void takePicture() {
         if (mStorageWriteEnable) {
-            if (mCameraParam.mGalleryType == GalleryType.PICTURE) {
-                if (mCameraParam.takeDelay && !mDelayTaking) {
-                    mDelayTaking = true;
-                    mMainHandler.postDelayed(new Runnable() {
+            SmartBeautyRender.getInstance().takeImage(new SmartBeautyRender.ITackImageCallback() {
+                @Override
+                public void onCaptured(final ByteBuffer buffer, final int width, final int height) {
+                    mMainHandler.post(new Runnable() {
                         @Override
                         public void run() {
-                            mDelayTaking = false;
-                            PreviewRenderer.getInstance().takePicture();
+                            String filePath = PathConstraints.getImageCachePath(mActivity);
+                            SmartBeautyResource.saveBitmap(filePath, buffer, width, height);
+
                         }
-                    }, 3000);
-                } else {
-                    PreviewRenderer.getInstance().takePicture();
+                    });
                 }
-            }
+            });
         } else {
             requestStoragePermission();
         }
@@ -581,27 +612,27 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
      * 初始化人脸检测器
      */
     private void initTracker() {
-        FaceTracker.getInstance()
-                .setFaceCallback(mFaceTrackerCallback)
-                .previewTrack(true)
-                .initTracker();
+//        FaceTracker.getInstance().setFaceCallback(mFaceTrackerCallback);
+//
+//        FaceTracker.getInstance().initTracker();
     }
 
     /**
      * 销毁人脸检测器
      */
     private void releaseFaceTracker() {
-        FaceTracker.getInstance().destroyTracker();
+//        FaceTracker.getInstance().destroyTracker();
     }
 
     /**
      * 准备人脸检测器
      */
     private void prepareTracker() {
-        FaceTracker.getInstance()
-                .setBackCamera(mCameraParam.backCamera)
-                .prepareFaceTracker(mActivity, mCameraParam.orientation,
-                        mCameraParam.previewWidth, mCameraParam.previewHeight);
+//        FaceTracker.getInstance()
+//                .setBackCamera(mCameraParam.backCamera);
+//
+//        FaceTracker.getInstance().prepareFaceTracker(mActivity, mActivationCode, mCameraParam.orientation,
+//                        mCameraParam.previewWidth, mCameraParam.previewHeight);
     }
 
     /**
@@ -609,9 +640,9 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
      */
     private FaceTrackerCallback mFaceTrackerCallback = new FaceTrackerCallback() {
         @Override
-        public void onTrackingFinish() {
-            // 检测完成需要请求刷新
-//            requestRender();
+            public void onTrackingFinish() {
+                // 检测完成需要请求刷新
+//                SmartBeautyRender.getInstance().requestRender();
         }
     };
 
@@ -643,18 +674,6 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
         }
     }
 
-    /**
-     * 请求录音权限
-     */
-    private void requestRecordSoundPermission() {
-        if (shouldShowRequestPermissionRationale(Manifest.permission.RECORD_AUDIO)) {
-            PermissionConfirmDialogFragment.newInstance(getString(R.string.request_sound_permission), PermissionUtils.REQUEST_SOUND_PERMISSION)
-                    .show(getChildFragmentManager(), FRAGMENT_DIALOG);
-        } else {
-            requestPermissions(new String[]{ Manifest.permission.RECORD_AUDIO},
-                    PermissionUtils.REQUEST_SOUND_PERMISSION);
-        }
-    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -685,64 +704,76 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
         }
     }
 
-    /**
-     * 注册服务
-     */
-    private void registerHomeReceiver() {
-        if (mActivity != null) {
-            IntentFilter homeFilter = new IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
-            mActivity.registerReceiver(mHomePressReceiver, homeFilter);
-        }
-    }
 
-    /**
-     * 注销服务
-     */
-    private void unRegisterHomeReceiver() {
-        if (mActivity != null) {
-            mActivity.unregisterReceiver(mHomePressReceiver);
-        }
-    }
 
-    /**
-     * Home按键监听服务
-     */
-    private BroadcastReceiver mHomePressReceiver = new BroadcastReceiver() {
-        private final String SYSTEM_DIALOG_REASON_KEY = "reason";
-        private final String SYSTEM_DIALOG_REASON_HOME_KEY = "homekey";
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (action.equals(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)) {
-                String reason = intent.getStringExtra(SYSTEM_DIALOG_REASON_KEY);
-                if (TextUtils.isEmpty(reason)) {
-                    return;
-                }
-                // 当点击了home键时需要停止预览，防止后台一直持有相机
-                if (reason.equals(SYSTEM_DIALOG_REASON_HOME_KEY)) {
-                    // 停止录制
-                    if (PreviewRecorder.getInstance().isRecording()) {
-                        // 取消录制
-                        PreviewRecorder.getInstance().cancelRecording();
-                        // 重置进入条
-                        mBtnShutter.setProgress((int) PreviewRecorder.getInstance().getVisibleDuration());
-                        // 删除分割线
-                        mBtnShutter.deleteSplitView();
-                        // 关闭按钮
-                        mBtnShutter.closeButton();
-                        // 更新时间
-                        mCountDownView.setText(PreviewRecorder.getInstance().getVisibleDurationString());
-                    }
-                }
-            }
-        }
-    };
 
-    /**
-     * 设置页面监听器
-     * @param listener
-     */
-    public void setOnPageOperationListener(OnPageOperationListener listener) {
-        mPageListener = listener;
-    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//    /**
+//     * 注册服务
+//     */
+//    private void registerHomeReceiver() {
+//        if (mActivity != null) {
+//            IntentFilter homeFilter = new IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
+//            mActivity.registerReceiver(mHomePressReceiver, homeFilter);
+//        }
+//    }
+
+//    /**
+//     * 注销服务
+//     */
+//    private void unRegisterHomeReceiver() {
+//        if (mActivity != null) {
+//            mActivity.unregisterReceiver(mHomePressReceiver);
+//        }
+//    }
+
+//    /**
+//     * Home按键监听服务
+//     */
+//    private BroadcastReceiver mHomePressReceiver = new BroadcastReceiver() {
+//        private final String SYSTEM_DIALOG_REASON_KEY = "reason";
+//        private final String SYSTEM_DIALOG_REASON_HOME_KEY = "homekey";
+//        @Override
+//        public void onReceive(Context context, Intent intent) {
+//            String action = intent.getAction();
+//            if (action.equals(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)) {
+//                String reason = intent.getStringExtra(SYSTEM_DIALOG_REASON_KEY);
+//                if (TextUtils.isEmpty(reason)) {
+//                    return;
+//                }
+//                // 当点击了home键时需要停止预览，防止后台一直持有相机
+//                if (reason.equals(SYSTEM_DIALOG_REASON_HOME_KEY)) {
+//                    // 停止录制
+//                    if (PreviewRecorder.getInstance().isRecording()) {
+//                        // 取消录制
+//                        PreviewRecorder.getInstance().cancelRecording();
+//                        // 重置进入条
+//                        mBtnShutter.setProgress((int) PreviewRecorder.getInstance().getVisibleDuration());
+//                        // 删除分割线
+//                        mBtnShutter.deleteSplitView();
+//                        // 关闭按钮
+//                        mBtnShutter.closeButton();
+//                        // 更新时间
+//                        mCountDownView.setText(PreviewRecorder.getInstance().getVisibleDurationString());
+//                    }
+//                }
+//            }
+//        }
+//    };
+
 }

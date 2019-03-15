@@ -811,7 +811,7 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
         @Override
         public void onTrackingFinish() {
             // 检测完成需要请求刷新
-//            requestRender();
+            requestRender();
         }
     };
 

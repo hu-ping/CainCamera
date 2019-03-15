@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 
@@ -14,12 +15,15 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+
 /**
  * 相机引擎
  * Created by cain on 2017/7/9.
  */
 
 public class CameraEngine {
+
+    private static final String TAG = "CameraEngine";
 
     private static class CameraEngineHolder {
         public static CameraEngine instance = new CameraEngine();
@@ -188,6 +192,7 @@ public class CameraEngine {
     public void setPreviewCallbackWithBuffer(Camera.PreviewCallback callback) {
         if (mCamera != null) {
             mCamera.setPreviewCallbackWithBuffer(callback);
+            Log.e(TAG, "previewBuffer size == " + CameraParam.getInstance().previewBuffer.length);
             mCamera.addCallbackBuffer(CameraParam.getInstance().previewBuffer);
         }
     }
@@ -227,6 +232,9 @@ public class CameraEngine {
         parameters.setPreviewSize(size.width, size.height);
         CameraParam.getInstance().previewWidth = size.width;
         CameraParam.getInstance().previewHeight = size.height;
+
+        Log.e(TAG, "expectWidth  == " + expectWidth +", size.height == " + expectHeight);
+        Log.e(TAG, "size.width  == " + size.width +", size.height == " + size.height);
         CameraParam.getInstance().previewBuffer = new byte[size.width * size.height * 3/ 2];
         camera.setParameters(parameters);
     }

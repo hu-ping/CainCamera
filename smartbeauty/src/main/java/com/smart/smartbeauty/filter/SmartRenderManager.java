@@ -41,7 +41,7 @@ public final class SmartRenderManager {
     }
 
     private SmartRenderManager() {
-        beautyParam = new SmartBeautyParam();
+        beautyParam = SmartBeautyParam.getInstance();
     }
 
     public static SmartRenderManager getInstance() {

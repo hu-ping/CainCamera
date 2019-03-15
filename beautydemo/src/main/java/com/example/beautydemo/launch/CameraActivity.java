@@ -1,12 +1,14 @@
 
 package com.example.beautydemo.launch;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Window;
 import android.view.WindowManager;
 
 import com.example.beautydemo.R;
+import com.example.beautydemo.fragment.CameraPreviewFragment;
 
 /**
  * 相机预览页面
@@ -14,6 +16,8 @@ import com.example.beautydemo.R;
 public class CameraActivity extends AppCompatActivity implements OnPageOperationListener {
 
     private static final String FRAGMENT_CAMERA = "fragment_camera";
+
+    private String activationCode = "xx-xx-xx" ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,9 +27,13 @@ public class CameraActivity extends AppCompatActivity implements OnPageOperation
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_camera);
 
+        Intent intent = getIntent();
+        activationCode = intent.getStringExtra("activationCode");
+
         if (null == savedInstanceState) {
             CameraPreviewFragment fragment = new CameraPreviewFragment();
-            fragment.setOnPageOperationListener(this);
+            fragment.setActivationCode(activationCode);
+//            fragment.setOnPageOperationListener(this);
             getSupportFragmentManager()
                     .beginTransaction()
                     .replace(R.id.container, fragment, FRAGMENT_CAMERA)
@@ -43,12 +51,12 @@ public class CameraActivity extends AppCompatActivity implements OnPageOperation
      * 人脸检测SDK验证，可以替换成自己的SDK
      */
     private void faceTrackerRequestNetwork() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                FaceTracker.requestFaceNetwork(CameraActivity.this);
-            }
-        }).start();
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                FaceTracker.requestFaceNetwork(CameraActivity.this);
+//            }
+//        }).start();
     }
 
     @Override

@@ -538,7 +538,16 @@ public final class FaceTracker {
                             oneFace.vertexPoints[2 * i] = point[0];
                         }
                         oneFace.vertexPoints[2 * i + 1] = point[1];
+
+
                     }
+
+                    Log.e(TAG, "faceIndex == " + faceIndex++);
+                    for(int i = 0; i < oneFace.vertexPoints.length; i += 2) {
+                        Log.e(TAG, "[" + oneFace.vertexPoints[i]
+                                + "," + oneFace.vertexPoints[i + 1]  + "]");
+                    }
+
                     // 插入人脸对象
                     LandmarkEngine.getInstance().putOneFace(index, oneFace);
                 }
@@ -550,6 +559,9 @@ public final class FaceTracker {
                 faceTrackParam.trackerCallback.onTrackingFinish();
             }
         }
+
+
+        static int faceIndex = 0;
     }
 
 }

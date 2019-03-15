@@ -2,10 +2,10 @@ package com.smart.smartbeauty.render;
 
 import android.content.Context;
 import android.graphics.SurfaceTexture;
-import android.hardware.Camera;
 import android.opengl.GLES30;
 import android.os.HandlerThread;
 import android.util.Log;
+import android.util.Size;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 
@@ -16,6 +16,7 @@ import com.cgfay.filterlibrary.glfilter.makeup.bean.DynamicMakeup;
 import com.cgfay.filterlibrary.glfilter.stickers.StaticStickerNormalFilter;
 import com.cgfay.filterlibrary.glfilter.stickers.bean.DynamicSticker;
 import com.cgfay.filterlibrary.glfilter.utils.OpenGLUtils;
+import com.smart.smartbeauty.api.SmartBeautyRender;
 import com.smart.smartbeauty.filter.SmartRenderManager;
 
 import java.nio.ByteBuffer;
@@ -25,8 +26,7 @@ import java.nio.ByteBuffer;
  * Created by cain on 2017/11/4.
  */
 
-public class SmartRenderThread extends HandlerThread implements SurfaceTexture.OnFrameAvailableListener,
-        Camera.PreviewCallback {
+public class SmartRenderThread extends HandlerThread {
 
     private static final String TAG = "SmartRenderThread";
     private static final boolean VERBOSE = false;
@@ -37,7 +37,7 @@ public class SmartRenderThread extends HandlerThread implements SurfaceTexture.O
     private final Object mSyncFrameNum = new Object();
     private final Object mSyncFence = new Object();
 
-    private boolean isPreviewing = false;       // 是否预览状态
+    private boolean isPreviewing = true;       // 是否预览状态
     private boolean isRecording = false;        // 是否录制状态
     private boolean isRecordingPause = false;   // 是否处于暂停录制状态
 
@@ -93,21 +93,20 @@ public class SmartRenderThread extends HandlerThread implements SurfaceTexture.O
         mRenderHandler = handler;
     }
 
-    public void setListener(ISmartRenderThreadListener listener)m {
+    public void setListener(ISmartRenderThreadListener listener) {
         mListener = listener;
     }
 
-    @Override
-    public void onFrameAvailable(SurfaceTexture surfaceTexture) {
-
-    }
 
     /**
      * Surface创建
      * @param holder
      */
     void surfaceCreated(SurfaceHolder holder) {
+        Log.e(TAG, "1...........................");
+
         mEglCore = new EglCore(null, EglCore.FLAG_RECORDABLE);
+
         //TODO: huping. mDisplaySurface使用CainSurfaceView的holder创建的，用于显示图像。
         mDisplaySurface = new WindowSurface(mEglCore, holder.getSurface(), false);
         mDisplaySurface.makeCurrent();
@@ -121,7 +120,13 @@ public class SmartRenderThread extends HandlerThread implements SurfaceTexture.O
         //TODO: huping.  mSurfaceTexture使用OESTexture创建用于将摄像头采集的图像渲染到其上面。
         mInputTexture = OpenGLUtils.createOESTexture();
         mSurfaceTexture = new SurfaceTexture(mInputTexture);
-        mSurfaceTexture.setOnFrameAvailableListener(this);
+        Log.e(TAG, "2...........................");
+
+
+        if(mListener != null) {
+            Size size =  mListener.onSurfaceCreated(mSurfaceTexture);
+            mRenderManager.setTextureSize(size.getWidth(), size.getHeight());
+        }
     }
 
     /**
@@ -130,11 +135,64 @@ public class SmartRenderThread extends HandlerThread implements SurfaceTexture.O
      * @param height
      */
     void surfaceChanged(int width, int height) {
+        Log.e(TAG, "3...........................");
+
         mRenderManager.setDisplaySize(width, height);
 
         if(mListener != null) {
-            mListener.onSurfaceFinish(mSurfaceTexture);
+            Log.e(TAG, "4...........................");
+            mListener.onSurfaceFinish();
         }
+    }
+
+
+    /**
+     * 绘制帧
+     */
+    void drawFrame() {
+        // 如果存在新的帧，则更新帧
+        synchronized (mSyncFrameNum) {
+            synchronized (mSyncFence) {
+                if (mSurfaceTexture != null) {
+                    while (mFrameNum != 0) {
+                        mSurfaceTexture.updateTexImage();
+                        --mFrameNum;
+                    }
+                } else {
+                    return;
+                }
+            }
+        }
+        Log.e(TAG, "5...........................");
+        // 切换渲染上下文
+        mDisplaySurface.makeCurrent();
+        mSurfaceTexture.getTransformMatrix(mMatrix);
+
+        // 绘制渲染
+        mCurrentTexture = mRenderManager.drawFrame(mInputTexture, mMatrix);
+
+        // 是否绘制人脸关键点
+        mRenderManager.drawFacePoint(mCurrentTexture);
+
+        // 显示到屏幕
+        mDisplaySurface.swapBuffers();
+
+        Log.e(TAG, "6...........................");
+
+//        // 执行拍照
+//        if (mCameraParam.isTakePicture && !mTakingPicture) {
+//            synchronized (mSyncFence) {
+//                mTakingPicture = true;
+//                mRenderHandler.sendEmptyMessage(SmartRenderHandler.MSG_TAKE_IMAGE);
+//            }
+//        }
+//
+//        // 是否处于录制状态
+//        if (isRecording && !isRecordingPause) {
+//            HardcodeEncoder.getInstance().frameAvailable();
+//            HardcodeEncoder.getInstance()
+//                    .drawRecorderFrame(mCurrentTexture, mSurfaceTexture.getTimestamp());
+//        }
     }
 
     /**
@@ -162,66 +220,33 @@ public class SmartRenderThread extends HandlerThread implements SurfaceTexture.O
         }
     }
 
+
     /**
-     * 绘制帧
+     * 请求刷新
      */
-    void drawFrame() {
-        // 如果存在新的帧，则更新帧
+    public void requestRender() {
         synchronized (mSyncFrameNum) {
-            synchronized (mSyncFence) {
-                if (mSurfaceTexture != null) {
-                    while (mFrameNum != 0) {
-                        mSurfaceTexture.updateTexImage();
-                        --mFrameNum;
-                    }
-                } else {
-                    return;
+            if (isPreviewing) {
+                ++mFrameNum;
+                if (mRenderHandler != null) {
+                    mRenderHandler.removeMessages(SmartRenderHandler.MSG_RENDER);
+                    mRenderHandler.sendMessage(mRenderHandler
+                            .obtainMessage(SmartRenderHandler.MSG_RENDER));
                 }
             }
         }
-
-        // 切换渲染上下文
-        mDisplaySurface.makeCurrent();
-        mSurfaceTexture.getTransformMatrix(mMatrix);
-
-        // 绘制渲染
-        mCurrentTexture = mRenderManager.drawFrame(mInputTexture, mMatrix);
-
-        // 是否绘制人脸关键点
-        mRenderManager.drawFacePoint(mCurrentTexture);
-
-        // 显示到屏幕
-        mDisplaySurface.swapBuffers();
-
-//        // 执行拍照
-//        if (mCameraParam.isTakePicture && !mTakingPicture) {
-//            synchronized (mSyncFence) {
-//                mTakingPicture = true;
-//                mRenderHandler.sendEmptyMessage(SmartRenderHandler.MSG_TAKE_PICTURE);
-//            }
-//        }
-//
-//        // 是否处于录制状态
-//        if (isRecording && !isRecordingPause) {
-//            HardcodeEncoder.getInstance().frameAvailable();
-//            HardcodeEncoder.getInstance()
-//                    .drawRecorderFrame(mCurrentTexture, mSurfaceTexture.getTimestamp());
-//        }
     }
-
 
 
 
     /**
      * 拍照
      */
-    void takePicture() {
+    void takeImage(SmartBeautyRender.ITackImageCallback callback) {
         synchronized (mSyncFence) {
             ByteBuffer buffer = mDisplaySurface.getCurrentFrame();
-            mCameraParam.captureCallback.onCapture(buffer,
+            callback.onCaptured(buffer,
                     mDisplaySurface.getWidth(), mDisplaySurface.getHeight());
-            mTakingPicture = false;
-            mCameraParam.isTakePicture = false;
         }
     }
 
@@ -310,26 +335,13 @@ public class SmartRenderThread extends HandlerThread implements SurfaceTexture.O
 //        isRecording = false;
 //    }
 
-//    /**
-//     * 请求刷新
-//     */
-//    public void requestRender() {
-//        synchronized (mSyncFrameNum) {
-//            if (isPreviewing) {
-//                ++mFrameNum;
-//                if (mRenderHandler != null) {
-//                    mRenderHandler.removeMessages(SmartRenderHandler.MSG_RENDER);
-//                    mRenderHandler.sendMessage(mRenderHandler
-//                            .obtainMessage(SmartRenderHandler.MSG_RENDER));
-//                }
-//            }
-//        }
-//    }
+
 
 
 
     public interface ISmartRenderThreadListener {
-        void onSurfaceFinish(SurfaceTexture surfaceTexture);
+        Size onSurfaceCreated(SurfaceTexture surfaceTexture);
+        void onSurfaceFinish();
         void onSurfaceDestroyed();
     }
 

@@ -4,19 +4,18 @@ import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
+import android.util.Size;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import com.cgfay.filterlibrary.glfilter.color.bean.DynamicColor;
 import com.cgfay.filterlibrary.glfilter.makeup.bean.DynamicMakeup;
-import com.cgfay.filterlibrary.glfilter.resource.FilterHelper;
-import com.cgfay.filterlibrary.glfilter.resource.MakeupHelper;
-import com.cgfay.filterlibrary.glfilter.resource.ResourceHelper;
 import com.cgfay.filterlibrary.glfilter.stickers.bean.DynamicSticker;
 import com.smart.smartbeauty.render.SmartRenderHandler;
 import com.smart.smartbeauty.render.SmartRenderThread;
 
 import java.lang.ref.WeakReference;
+import java.nio.ByteBuffer;
 
 /**
  * Created by deepglint on 2019/3/1.
@@ -59,9 +58,17 @@ public class SmartBeautyRender{
         if (mPreviewRenderThread != null) {
             mPreviewRenderThread.setListener(new SmartRenderThread.ISmartRenderThreadListener() {
                 @Override
-                public void onSurfaceFinish(SurfaceTexture surfaceTexture) {
+                public Size onSurfaceCreated(SurfaceTexture surfaceTexture) {
                     if (mListener != null) {
-                        mListener.onRenderFinish(surfaceTexture);
+                       return mListener.onRenderCreated(surfaceTexture);
+                    }
+                    return null;
+                }
+
+                @Override
+                public void onSurfaceFinish() {
+                    if (mListener != null) {
+                        mListener.onRenderFinish();
                     }
                 }
 
@@ -100,10 +107,12 @@ public class SmartBeautyRender{
                 mWeakSurfaceView.clear();
                 mWeakSurfaceView = null;
             }
+
             if (mRenderHandler != null) {
                 mRenderHandler.removeCallbacksAndMessages(null);
                 mRenderHandler = null;
             }
+
             if (mPreviewRenderThread != null) {
                 mPreviewRenderThread.quitSafely();
                 try {
@@ -155,17 +164,36 @@ public class SmartBeautyRender{
 
     };
 
+
     /**
      * 绘制帧
      */
-    public void drawFrame() {
-        if (mRenderHandler != null) {
-            mRenderHandler.removeMessages(SmartRenderHandler.MSG_RENDER);
-            mRenderHandler.sendMessage(mRenderHandler
-                    .obtainMessage(SmartRenderHandler.MSG_RENDER));
+    public void requestRender() {
+//        if (mRenderHandler != null) {
+//            mRenderHandler.removeMessages(SmartRenderHandler.MSG_RENDER);
+//            mRenderHandler.sendMessage(mRenderHandler
+//                    .obtainMessage(SmartRenderHandler.MSG_RENDER));
+//
+//        }
 
+        mPreviewRenderThread.requestRender();
+    }
+
+    // 执行拍照
+    public void takeImage(ITackImageCallback callback){
+        if (mRenderHandler == null) {
+            return;
+        }
+        synchronized (mSynOperation) {
+            mRenderHandler.sendMessage(mRenderHandler
+                    .obtainMessage(SmartRenderHandler.MSG_TAKE_IMAGE, callback));
         }
     }
+
+    public interface ITackImageCallback{
+        void onCaptured(ByteBuffer buffer, int width, int height);
+    }
+
 
     /**
      * 切换动态资源
@@ -225,7 +253,8 @@ public class SmartBeautyRender{
 
 
     public interface ISmartRenderListener {
-        void onRenderFinish(SurfaceTexture cameraSurfaceTexture);
+        Size onRenderCreated(SurfaceTexture cameraSurfaceTexture);
+        void onRenderFinish();
         void onRenderDestroyed();
     }
 

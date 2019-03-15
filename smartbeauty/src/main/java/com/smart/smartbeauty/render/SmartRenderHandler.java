@@ -7,6 +7,7 @@ import android.view.SurfaceHolder;
 import com.cgfay.filterlibrary.glfilter.color.bean.DynamicColor;
 import com.cgfay.filterlibrary.glfilter.makeup.bean.DynamicMakeup;
 import com.cgfay.filterlibrary.glfilter.stickers.bean.DynamicSticker;
+import com.smart.smartbeauty.api.SmartBeautyRender;
 
 import java.lang.ref.WeakReference;
 
@@ -36,7 +37,7 @@ public class SmartRenderHandler extends Handler {
     // 预览帧回调
     public static final int MSG_PREVIEW_CALLBACK = 0x011;
     // 拍照
-    public static final int MSG_TAKE_PICTURE = 0x012;
+    public static final int MSG_TAKE_IMAGE = 0x012;
     // 计算fps
     public static final int MSG_CALCULATE_FPS = 0x013;
     // 切换边框模糊功能
@@ -47,6 +48,10 @@ public class SmartRenderHandler extends Handler {
     public static final int MSG_CHANGE_DYNAMIC_MAKEUP = 0x16;
     // 切换动态动态资源
     public static final int MSG_CHANGE_DYNAMIC_RESOURCE = 0x17;
+
+
+    public static final int MSG_SET_TEXTURE_SIZE = 0x18;
+
 
     private WeakReference<SmartRenderThread> mWeakRenderThread;
 
@@ -109,8 +114,8 @@ public class SmartRenderHandler extends Handler {
 //                break;
 
             // 拍照
-            case MSG_TAKE_PICTURE:
-                thread.takePicture();
+            case MSG_TAKE_IMAGE:
+                thread.takeImage((SmartBeautyRender.ITackImageCallback)msg.obj);
                 break;
 
 //            // 计算fps

@@ -36,7 +36,7 @@
             android:background="@drawable/ic_camera_sticker_light" />
 
         <!-- 快门 -->
-        <com.cgfay.cameralibrary.widget.ShutterButton
+        <com.example.beautydemo.widget.ShutterButton
             android:id="@+id/btn_shutter"
             android:layout_width="@dimen/record_width_height_normal"
             android:layout_height="@dimen/record_width_height_normal"

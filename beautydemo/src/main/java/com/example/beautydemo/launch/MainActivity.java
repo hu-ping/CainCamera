@@ -5,18 +5,24 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 
 import com.example.beautydemo.R;
 import com.example.beautydemo.util.PermissionUtils;
-import com.smart.smartbeauty.api.SmartBeautyRender;
-import com.smart.smartbeauty.api.SmartBeautyResource;
+
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final int REQUEST_CODE = 0;
+    private static final String TAG = "MainActivity";
 
     private boolean mOnClick;
+
+    private String activationCode = "xx-xx-xx" ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,7 +30,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
         checkPermissions();
         initView();
-        initResources();
     }
 
     private void checkPermissions() {
@@ -48,6 +53,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.btn_camera).setOnClickListener(this);
 //        findViewById(R.id.btn_edit_video).setOnClickListener(this);
 //        findViewById(R.id.btn_edit_picture).setOnClickListener(this);
+
+
+
+        // initialize url.
+        final EditText activationCodeInput = (EditText) findViewById(R.id.activation_input_edit_text);
+        activationCodeInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                String fu = activationCodeInput.getText().toString();
+                if (fu.isEmpty()) {
+                    return;
+                }
+
+                activationCode = fu;
+
+                Log.i(TAG, "face sdk activation code is " + activationCode);
+            }
+        });
     }
 
     @Override
@@ -80,17 +111,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    /**
-     * 初始化动态贴纸、滤镜等资源
-     */
-    private void initResources() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                SmartBeautyResource.initResources(MainActivity.this);
-            }
-        }).start();
-    }
+
 
     /**
      * 打开预览页面
@@ -124,6 +145,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
         Intent intent = new Intent(this, CameraActivity.class);
+        intent.putExtra("activationCode", activationCode);
         startActivity(intent);
     }
 
