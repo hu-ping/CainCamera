@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
+import android.util.Log;
 import android.util.Size;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -11,8 +12,8 @@ import android.view.SurfaceView;
 import com.cgfay.filterlibrary.glfilter.color.bean.DynamicColor;
 import com.cgfay.filterlibrary.glfilter.makeup.bean.DynamicMakeup;
 import com.cgfay.filterlibrary.glfilter.stickers.bean.DynamicSticker;
-import com.smart.smartbeauty.render.SmartRenderHandler;
-import com.smart.smartbeauty.render.SmartRenderThread;
+import com.smart.smartbeauty.thread.SmartRenderHandler;
+import com.smart.smartbeauty.thread.SmartRenderThread;
 
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
@@ -23,6 +24,7 @@ import java.nio.ByteBuffer;
 
 public class SmartBeautyRender{
 
+    private static final String TAG = "SmartBeautyRender";
     private ISmartRenderListener mListener = null;
 
     // 渲染Handler
@@ -148,6 +150,11 @@ public class SmartBeautyRender{
 
         @Override
         public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+            Log.e(TAG, "surfaceChanged width == " + width + ", height == " + height);
+            if (height == 3413) {
+               height = 3000;
+            }
+
             if (mRenderHandler != null) {
                 mRenderHandler.sendMessage(mRenderHandler
                         .obtainMessage(SmartRenderHandler.MSG_SURFACE_CHANGED, width, height));
@@ -175,8 +182,9 @@ public class SmartBeautyRender{
 //                    .obtainMessage(SmartRenderHandler.MSG_RENDER));
 //
 //        }
-
-        mPreviewRenderThread.requestRender();
+        if (mPreviewRenderThread != null) {
+            mPreviewRenderThread.requestRender();
+        }
     }
 
     // 执行拍照

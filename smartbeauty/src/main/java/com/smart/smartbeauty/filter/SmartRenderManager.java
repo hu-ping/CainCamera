@@ -36,6 +36,8 @@ import java.nio.FloatBuffer;
  */
 public final class SmartRenderManager {
 
+    private static final String TAG = "SmartRenderManager";
+
     private static class RenderManagerHolder {
         public static SmartRenderManager instance = new SmartRenderManager();
     }
@@ -330,6 +332,7 @@ public final class SmartRenderManager {
      * @param mCurrentTexture
      */
     public void drawFacePoint(int mCurrentTexture) {
+        beautyParam.drawFacePoints = true;
         if (mFilterArrays.get(SmartRenderIndex.FacePointIndex) != null) {
             if (beautyParam.drawFacePoints && LandmarkEngine.getInstance().hasFace()) {
                 mFilterArrays.get(SmartRenderIndex.FacePointIndex).drawFrame(mCurrentTexture, mDisplayVertexBuffer, mDisplayTextureBuffer);
@@ -379,35 +382,38 @@ public final class SmartRenderManager {
      * 调整由于surface的大小与SurfaceView大小不一致带来的显示问题
      */
     private void adjustCoordinateSize() {
+        Log.e(TAG, "mViewWidth == " + mViewWidth + ", mViewHeight == "  + mViewHeight);
+        Log.e(TAG, "mTextureWidth == " + mTextureWidth + ", mTextureHeight == "  + mTextureHeight);
+
         float[] textureCoord = null;
         float[] vertexCoord = null;
         float[] textureVertices = TextureRotationUtils.TextureVertices;
         float[] vertexVertices = TextureRotationUtils.CubeVertices;
-        float ratioMax = Math.max((float) mViewWidth / mTextureWidth,
-                (float) mViewHeight / mTextureHeight);
-        // 新的宽高
-        int imageWidth = Math.round(mTextureWidth * ratioMax);
-        int imageHeight = Math.round(mTextureHeight * ratioMax);
-        // 获取视图跟texture的宽高比
-        float ratioWidth = (float) imageWidth / (float) mViewWidth;
-        float ratioHeight = (float) imageHeight / (float) mViewHeight;
-        if (mScaleType == SmartScaleType.CENTER_INSIDE) {
-            vertexCoord = new float[] {
-                    vertexVertices[0] / ratioHeight, vertexVertices[1] / ratioWidth, vertexVertices[2],
-                    vertexVertices[3] / ratioHeight, vertexVertices[4] / ratioWidth, vertexVertices[5],
-                    vertexVertices[6] / ratioHeight, vertexVertices[7] / ratioWidth, vertexVertices[8],
-                    vertexVertices[9] / ratioHeight, vertexVertices[10] / ratioWidth, vertexVertices[11],
-            };
-        } else if (mScaleType == SmartScaleType.CENTER_CROP) {
-            float distHorizontal = (1 - 1 / ratioWidth) / 2;
-            float distVertical = (1 - 1 / ratioHeight) / 2;
-            textureCoord = new float[] {
-                    addDistance(textureVertices[0], distVertical), addDistance(textureVertices[1], distHorizontal),
-                    addDistance(textureVertices[2], distVertical), addDistance(textureVertices[3], distHorizontal),
-                    addDistance(textureVertices[4], distVertical), addDistance(textureVertices[5], distHorizontal),
-                    addDistance(textureVertices[6], distVertical), addDistance(textureVertices[7], distHorizontal),
-            };
-        }
+//        float ratioMax = Math.max((float) mViewWidth / mTextureWidth,
+//                (float) mViewHeight / mTextureHeight);
+//        // 新的宽高
+//        int imageWidth = Math.round(mTextureWidth * ratioMax);
+//        int imageHeight = Math.round(mTextureHeight * ratioMax);
+//        // 获取视图跟texture的宽高比
+//        float ratioWidth = (float) imageWidth / (float) mViewWidth;
+//        float ratioHeight = (float) imageHeight / (float) mViewHeight;
+//        if (mScaleType == SmartScaleType.CENTER_INSIDE) {
+//            vertexCoord = new float[] {
+//                    vertexVertices[0] / ratioHeight, vertexVertices[1] / ratioWidth, vertexVertices[2],
+//                    vertexVertices[3] / ratioHeight, vertexVertices[4] / ratioWidth, vertexVertices[5],
+//                    vertexVertices[6] / ratioHeight, vertexVertices[7] / ratioWidth, vertexVertices[8],
+//                    vertexVertices[9] / ratioHeight, vertexVertices[10] / ratioWidth, vertexVertices[11],
+//            };
+//        } else if (mScaleType == SmartScaleType.CENTER_CROP) {
+//            float distHorizontal = (1 - 1 / ratioWidth) / 2;
+//            float distVertical = (1 - 1 / ratioHeight) / 2;
+//            textureCoord = new float[] {
+//                    addDistance(textureVertices[0], distVertical), addDistance(textureVertices[1], distHorizontal),
+//                    addDistance(textureVertices[2], distVertical), addDistance(textureVertices[3], distHorizontal),
+//                    addDistance(textureVertices[4], distVertical), addDistance(textureVertices[5], distHorizontal),
+//                    addDistance(textureVertices[6], distVertical), addDistance(textureVertices[7], distHorizontal),
+//            };
+//        }
         if (vertexCoord == null) {
             vertexCoord = vertexVertices;
         }

@@ -1,8 +1,9 @@
-package com.smart.smartbeauty.render;
+package com.smart.smartbeauty.thread;
 
 import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES30;
+import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
 import android.util.Size;
@@ -62,7 +63,7 @@ public class SmartRenderThread extends HandlerThread {
     private int mFrameNum = 0;
 
     // 渲染Handler回调
-    private SmartRenderHandler mRenderHandler;
+    private Handler mRenderHandler;
 
 //    // 计算帧率
 //    private FrameRateMeter mFrameRateMeter;
@@ -89,7 +90,7 @@ public class SmartRenderThread extends HandlerThread {
      * 设置预览Handler回调
      * @param handler
      */
-    public void setRenderHandler(SmartRenderHandler handler) {
+    public void setRenderHandler(Handler handler) {
         mRenderHandler = handler;
     }
 
@@ -103,7 +104,6 @@ public class SmartRenderThread extends HandlerThread {
      * @param holder
      */
     void surfaceCreated(SurfaceHolder holder) {
-        Log.e(TAG, "1...........................");
 
         mEglCore = new EglCore(null, EglCore.FLAG_RECORDABLE);
 
@@ -120,7 +120,7 @@ public class SmartRenderThread extends HandlerThread {
         //TODO: huping.  mSurfaceTexture使用OESTexture创建用于将摄像头采集的图像渲染到其上面。
         mInputTexture = OpenGLUtils.createOESTexture();
         mSurfaceTexture = new SurfaceTexture(mInputTexture);
-        Log.e(TAG, "2...........................");
+
 
 
         if(mListener != null) {
@@ -135,12 +135,9 @@ public class SmartRenderThread extends HandlerThread {
      * @param height
      */
     void surfaceChanged(int width, int height) {
-        Log.e(TAG, "3...........................");
-
         mRenderManager.setDisplaySize(width, height);
 
         if(mListener != null) {
-            Log.e(TAG, "4...........................");
             mListener.onSurfaceFinish();
         }
     }
@@ -163,7 +160,7 @@ public class SmartRenderThread extends HandlerThread {
                 }
             }
         }
-        Log.e(TAG, "5...........................");
+
         // 切换渲染上下文
         mDisplaySurface.makeCurrent();
         mSurfaceTexture.getTransformMatrix(mMatrix);
@@ -177,7 +174,6 @@ public class SmartRenderThread extends HandlerThread {
         // 显示到屏幕
         mDisplaySurface.swapBuffers();
 
-        Log.e(TAG, "6...........................");
 
 //        // 执行拍照
 //        if (mCameraParam.isTakePicture && !mTakingPicture) {

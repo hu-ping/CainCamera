@@ -1,4 +1,4 @@
-package com.smart.smartbeauty.render;
+package com.smart.smartbeauty.thread;
 
 import android.os.Handler;
 import android.os.Message;

@@ -15,6 +15,10 @@ import com.deepglint.hri.facesdk.FaceSDKOptions;
 import com.deepglint.hri.utils.ImageUtils;
 import com.smart.smartbeauty.api.SmartLandmark;
 import com.smart.smartbeauty.api.SmartOneFace;
+import com.smart.smartbeauty.math.SmartCurveFitting;
+import com.smart.smartbeauty.math.SmartLagrangeInterpolation;
+import com.smart.smartbeauty.math.SmartLeastSquares;
+import com.smart.smartbeauty.math.SmartSplineInterpolator;
 
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
@@ -380,15 +384,22 @@ public final class FaceTracker {
             faceSDKManager = FaceSDKManager.getInstance();
         }
 
+        static int faceIndex = 0;
         private synchronized void internalTrackFace(byte[] data, int width, int height) {
+            Log.e(TAG, "cameraRotation == " + cameraRotation);
+
+
             FaceTrackParam faceTrackParam = FaceTrackParam.getInstance();
 
             ImageFrame frame = new ImageFrame();
             frame.setRawData(data, width, height);
             Mat image = frame.getBgrMat();
             if(cameraRotation == 90) {
+//                Core.transpose(image, image);
+//                Core.flip(image, image, 1);
+
                 Core.transpose(image, image);
-                Core.flip(image, image, 1);
+                Core.flip(image, image, 0);
             }else if(cameraRotation == 180) {
                 Core.flip(image, image, 0);
                 Core.flip(image, image, 1);
@@ -473,43 +484,50 @@ public final class FaceTracker {
                     oneFace.confidence = face.confidence;
 
                     // 预览状态下，宽高交换
-                    if (faceTrackParam.previewTrack) {
-                        if (cameraRotation == 90 || cameraRotation == 270) {
-                            int temp = width;
-                            width = height;
-                            height = temp;
-                        }
-                    }
+//                    if (faceTrackParam.previewTrack) {
+//                        if (cameraRotation == 90 || cameraRotation == 270) {
+//                            int temp = width;
+//                            width = height;
+//                            height = temp;
+//                        }
+//                    }
 
                     // 获取一个人的关键点坐标
                     if (oneFace.vertexPoints == null || oneFace.vertexPoints.length != face.landmarks.length * 2) {
-                        oneFace.vertexPoints = new float[face.landmarks.length * 2];
+                        oneFace.vertexPoints = new float[212];
                     }
-                    for (int i = 0; i < face.landmarks.length/2; i++) {
+
+                    float[] updateLandmarks  = convertTo106(face);
+//                    float[] updateLandmarks  = face.landmarks.clone();
+
+                    for (int i = 0; i <  updateLandmarks.length/2; i++) {
+                        Log.e(TAG, i + " == x:" +  updateLandmarks[i * 2] + ", y:" +  updateLandmarks[i * 2 + 1]);
+
                         // orientation = 0、3 表示竖屏，1、2 表示横屏
-                        float x = (face.landmarks[i * 2] / height) * 2 - 1;
-                        float y = (face.landmarks[i * 2 + 1] / width) * 2 - 1;
+                        float x = ( updateLandmarks[i * 2] / height) * 2 - 1;
+                        float y = ( updateLandmarks[i * 2 + 1] /width ) * 2 - 1;
                         float[] point = new float[] {x, -y};
-                        if (cameraRotation == 90) {
-                            if (faceTrackParam.previewTrack && faceTrackParam.isBackCamera) {
-                                point[0] = -y;
-                                point[1] = -x;
-                            } else {
-                                point[0] = y;
-                                point[1] = x;
-                            }
-                        } else if (cameraRotation == 270) {
-                            if (faceTrackParam.previewTrack && faceTrackParam.isBackCamera) {
-                                point[0] = y;
-                                point[1] = x;
-                            } else {
-                                point[0] = -y;
-                                point[1] = -x;
-                            }
-                        } else if (cameraRotation == 180) {
-                            point[0] = -x;
-                            point[1] = y;
-                        }
+
+//                        if (cameraRotation == 180) {
+//                            if (faceTrackParam.previewTrack && faceTrackParam.isBackCamera) {
+//                                point[0] = -y;
+//                                point[1] = -x;
+//                            } else {
+//                                point[0] = y;
+//                                point[1] = x;
+//                            }
+//                        } else if (cameraRotation == 270) {
+//                            if (faceTrackParam.previewTrack && faceTrackParam.isBackCamera) {
+//                                point[0] = y;
+//                                point[1] = x;
+//                            } else {
+//                                point[0] = -y;
+//                                point[1] = -x;
+//                            }
+//                        } else if (cameraRotation == 90) {
+//                            point[0] = -x;
+//                            point[1] = y;
+//                        }
                         // 顶点坐标
                         if (faceTrackParam.previewTrack) {
                             if (faceTrackParam.isBackCamera) {
@@ -522,10 +540,21 @@ public final class FaceTracker {
                         }
                         oneFace.vertexPoints[2 * i + 1] = point[1];
                     }
+
+                    Log.e(TAG, "faceIndex == " + faceIndex++ + ", landmark size == " + oneFace.vertexPoints.length);
+                    for(int i = 0; i < oneFace.vertexPoints.length; i += 2) {
+                        Log.e(TAG, (i/2) + "== [" + oneFace.vertexPoints[i]
+                                + "," + oneFace.vertexPoints[i + 1]  + "]");
+                    }
+
+
                     // 插入人脸对象
                     SmartLandmark.getInstance().putOneFace(index, oneFace);
                 }
             }
+
+
+
             // 设置人脸个数
             SmartLandmark.getInstance().setFaceSize(faceInfos!= null ? faceInfos.length : 0);
             // 检测完成回调
@@ -534,6 +563,366 @@ public final class FaceTracker {
             }
 
         }
+
+
+
+        private float[] convertTo106(FaceInfo face) {
+            float[] updateLandmarks = new float[212];
+
+
+            //脸颊
+            double[] xArr = new double[13];
+            double[] yArr = new double[13];
+
+            for (int i = 0; i < 13; i++) {
+                xArr[i] = face.landmarks[i * 2];
+                yArr[i] = face.landmarks[i * 2 + 1];
+            }
+
+            for (int i = 0; i < 13; i++) {
+                Log.i(TAG, i + " == x:" + xArr[i] + ", y:" + yArr[i]);
+            }
+
+
+//            for(int i = 0; i < 30; i++) {
+//                updateLandmarks[i * 2] = (float) xArr[0] + 10 * i;
+//                updateLandmarks[i * 2 + 1] = (float) SmartLeastSquares.getY(xArr[0] + 10 * i);
+//            }
+
+            SmartSplineInterpolator.initSplineInterpolator(xArr, yArr, 13);
+            SmartLeastSquares.initCoefficients(xArr, yArr, 13);
+
+
+            //脸颊(左)
+            updateLandmarks[0 * 2] = (float) xArr[0];
+            updateLandmarks[0 * 2 + 1] = (float) yArr[0];
+
+            double distance = xArr[1] - xArr[0];
+            double average = distance / 3;
+            double yDistance = yArr[1] - yArr[0];
+            double yAverage = yDistance / 3;
+//            updateLandmarks[1 * 2] = (float) (updateLandmarks[0 * 2] + average);
+//            updateLandmarks[1 * 2 + 1] = (float) (updateLandmarks[0 * 2 + 1] + yAverage);
+//
+//            updateLandmarks[2 * 2] = (float) (updateLandmarks[1 * 2] + average);
+//            updateLandmarks[2 * 2 + 1] = (float) (updateLandmarks[1 * 2 + 1] + yAverage);
+//
+//            updateLandmarks[3 * 2] = (float) xArr[1];
+//            updateLandmarks[3 * 2 + 1] = (float) yArr[1];
+//
+//            updateLandmarks[4 * 2] = (float)(updateLandmarks[3 * 2] + average);
+//            updateLandmarks[4 * 2 + 1] = (float) (updateLandmarks[3 * 2 + 1] + yAverage);
+//
+//            updateLandmarks[5 * 2] = (float)xArr[2];
+//            updateLandmarks[5 * 2 + 1] = (float) yArr[2];
+//
+//
+//            distance = xArr[3] - xArr[2];
+//            average = distance / 3;
+//            yDistance = yArr[3] - yArr[2];
+//            yAverage = yDistance / 3;
+//            updateLandmarks[6 * 2] = (float)(updateLandmarks[5 * 2] + average);
+//            updateLandmarks[6 * 2 + 1] = (float) (updateLandmarks[5 * 2 + 1] + yAverage);
+//
+//            updateLandmarks[7 * 2] = (float) (updateLandmarks[6 * 2] + average);
+//            updateLandmarks[7 * 2 + 1] = (float) (updateLandmarks[6 * 2 + 1] + yAverage);
+//
+//            updateLandmarks[8 * 2] = (float)xArr[3];
+//            updateLandmarks[8 * 2 + 1] = (float) yArr[3];
+//
+//
+//            distance = xArr[4] - xArr[3];
+//            average = distance / 3;
+//            yDistance = yArr[4] - yArr[3];
+//            yAverage = yDistance / 3;
+//            updateLandmarks[9 * 2] = (float)(updateLandmarks[8 * 2] + average);
+//            updateLandmarks[9 * 2 + 1] = (float) (updateLandmarks[8 * 2 + 1] + yAverage);
+//
+//            updateLandmarks[10 * 2] = (float)(updateLandmarks[9 * 2] + average);
+//            updateLandmarks[10 * 2 + 1] = (float) (updateLandmarks[9 * 2 + 1] + yAverage);
+//
+//            updateLandmarks[11 * 2] = (float)xArr[4];
+//            updateLandmarks[11 * 2 + 1] = (float) yArr[4];
+//
+//
+//            distance = xArr[5] - xArr[4];
+//            average = distance / 2;
+//            yDistance = yArr[5] - yArr[4];
+//            yAverage = yDistance / 2;
+//            updateLandmarks[12 * 2] = (float)(updateLandmarks[11 * 2] + average);
+//            updateLandmarks[12 * 2 + 1] = (float) (updateLandmarks[11 * 2 + 1] + yAverage);
+//
+//            updateLandmarks[13 * 2] = (float)xArr[5];
+//            updateLandmarks[13 * 2 + 1] = (float) yArr[5];
+//
+//
+//            distance = xArr[6] - xArr[5];
+//            average = distance / 3;
+//            yDistance = yArr[6] - yArr[5];
+//            yAverage = yDistance / 3;
+//            updateLandmarks[14 * 2] = (float)(updateLandmarks[13 * 2] + average);
+//            updateLandmarks[14 * 2 + 1] = (float) (updateLandmarks[13 * 2 + 1] + yAverage);
+//
+//            updateLandmarks[15 * 2] = (float)(updateLandmarks[14 * 2] + average);
+//            updateLandmarks[15 * 2 + 1] = (float) (updateLandmarks[14 * 2 + 1] + yAverage);
+//
+//            updateLandmarks[16 * 2] = (float) xArr[6];
+//            updateLandmarks[16 * 2 + 1] = (float)yArr[6];
+//
+//
+//            //脸颊(右)
+//            distance = xArr[7] - xArr[6];
+//            average = distance / 3;
+//            yDistance = yArr[7] - yArr[6];
+//            yAverage = yDistance / 3;
+//            updateLandmarks[17 * 2] = (float) (updateLandmarks[16 * 2] + average);
+//            updateLandmarks[17 * 2 + 1] = (float) (updateLandmarks[16 * 2 + 1] + yAverage);
+//
+//            updateLandmarks[18 * 2] = (float) (updateLandmarks[17 * 2] + average);
+//            updateLandmarks[18 * 2 + 1] = (float) (updateLandmarks[17 * 2 + 1] + yAverage);
+//
+//            updateLandmarks[19 * 2] = (float) xArr[7];
+//            updateLandmarks[19 * 2 + 1] = (float) yArr[7];
+//
+//
+//            distance = xArr[8] - xArr[7];
+//            average = distance / 2;
+//            yDistance = yArr[8] - yArr[7];
+//            yAverage = yDistance / 2;
+//            updateLandmarks[20 * 2] = (float)(updateLandmarks[19 * 2] + average);
+//            updateLandmarks[20 * 2 + 1] = (float) (updateLandmarks[19 * 2 + 1] + yAverage);
+//
+//            updateLandmarks[21 * 2] = (float)xArr[8];
+//            updateLandmarks[21 * 2 + 1] = (float) yArr[8];
+//
+//
+//            distance = xArr[9] - xArr[8];
+//            average = distance / 3;
+//            yDistance = yArr[9] - yArr[8];
+//            yAverage = yDistance / 3;
+//            updateLandmarks[22 * 2] = (float)(updateLandmarks[21 * 2] + average);
+//            updateLandmarks[22 * 2 + 1] = (float) (updateLandmarks[21 * 2 + 1] + yAverage);
+//
+//            updateLandmarks[23 * 2] = (float) (updateLandmarks[22 * 2] + average);
+//            updateLandmarks[23 * 2 + 1] = (float) (updateLandmarks[22 * 2 + 1] + yAverage);
+//
+//            updateLandmarks[24 * 2] = (float)xArr[9];
+//            updateLandmarks[24 * 2 + 1] = (float) yArr[9];
+//
+//
+//            distance = xArr[10] - xArr[9];
+//            average = distance / 3;
+//            yDistance = yArr[10] - yArr[9];
+//            yAverage = yDistance / 3;
+//            updateLandmarks[25 * 2] = (float)(updateLandmarks[24 * 2] + average);
+//            updateLandmarks[25 * 2 + 1] = (float) (updateLandmarks[24 * 2 + 1] + yAverage);
+//
+//            updateLandmarks[26 * 2] = (float)(updateLandmarks[25 * 2] + average);
+//            updateLandmarks[26 * 2 + 1] = (float) (updateLandmarks[25 * 2 + 1] + yAverage);
+//
+//
+//            updateLandmarks[27 * 2] = (float)xArr[10];
+//            updateLandmarks[27 * 2 + 1] = (float) yArr[10];
+//
+//            updateLandmarks[28 * 2] = (float)(updateLandmarks[27 * 2] + average);
+//            updateLandmarks[28 * 2 + 1] = (float) (updateLandmarks[27 * 2 + 1] + yAverage);
+//
+//            updateLandmarks[29 * 2] = (float)xArr[11];
+//            updateLandmarks[29 * 2 + 1] = (float) yArr[11];
+//
+//
+//            distance = xArr[12] - xArr[11];
+//            average = distance / 3;
+//            yDistance = yArr[12] - yArr[11];
+//            yAverage = yDistance / 3;
+//            updateLandmarks[30 * 2] = (float)(updateLandmarks[29 * 2] + average);
+//            updateLandmarks[30 * 2 + 1] = (float) (updateLandmarks[29 * 2 + 1] + yAverage);
+//
+//            updateLandmarks[31 * 2] = (float)(updateLandmarks[30 * 2] + average);
+//            updateLandmarks[31 * 2 + 1] = (float) (updateLandmarks[30 * 2 + 1] + yAverage);
+//
+//            updateLandmarks[32 * 2] = (float)xArr[12];
+//            updateLandmarks[32 * 2 + 1] = (float)yArr[12];
+//
+//
+//            //眉毛上沿
+//            for (int i = 33, j = 22; i < 38; i++, j++) {
+//                updateLandmarks[i * 2] = face.landmarks[j * 2];
+//                updateLandmarks[i * 2 + 1] = face.landmarks[j * 2 + 1];
+//            }
+//
+//            for (int i = 38, j = 39; i < 43; i++, j++) {
+//                updateLandmarks[i * 2] = face.landmarks[j * 2];
+//                updateLandmarks[i * 2 + 1] = face.landmarks[j * 2 + 1];
+//            }
+//
+//
+//            //鼻子中央
+//            distance = face.landmarks[38 * 2] + face.landmarks[21 * 2];
+//            average = distance / 2;
+//            updateLandmarks[43 * 2] = face.landmarks[57 * 2];
+//            distance = face.landmarks[38 * 2 + 1] + face.landmarks[21 * 2 + 1];
+//            average = distance / 2;
+//            updateLandmarks[43 * 2 + 1] = (float) average;
+//
+//            distance = face.landmarks[57 * 2 + 1] - updateLandmarks[43 * 2 + 1];
+//            average = distance / 3;
+//            updateLandmarks[44 * 2] = face.landmarks[57 * 2];
+//            updateLandmarks[44 * 2 + 1] = (float) (updateLandmarks[43 * 2 + 1] + average);
+//            updateLandmarks[45 * 2] = face.landmarks[57 * 2];
+//            updateLandmarks[45 * 2 + 1] = (float) (updateLandmarks[44 * 2 + 1] + average);
+//            updateLandmarks[46 * 2] = face.landmarks[57 * 2];
+//            updateLandmarks[46 * 2 + 1] = face.landmarks[57 * 2 + 1];
+//
+//
+//            //鼻子两翼
+//            updateLandmarks[78 * 2] = face.landmarks[47 * 2];
+//            updateLandmarks[78 * 2 + 1] = face.landmarks[47 * 2 + 1];
+//            updateLandmarks[79 * 2] = face.landmarks[56 * 2];
+//            updateLandmarks[79 * 2 + 1] = face.landmarks[56 * 2 + 1];
+//            updateLandmarks[80 * 2] = face.landmarks[49 * 2];
+//            updateLandmarks[80 * 2 + 1] = face.landmarks[49 * 2 + 1];
+//            updateLandmarks[81 * 2] = face.landmarks[54 * 2];
+//            updateLandmarks[81 * 2 + 1] = face.landmarks[54 * 2 + 1];
+//            updateLandmarks[82 * 2] = face.landmarks[50 * 2];
+//            updateLandmarks[82 * 2 + 1] = face.landmarks[50 * 2 + 1];
+//            updateLandmarks[83 * 2] = face.landmarks[53 * 2];
+//            updateLandmarks[83 * 2 + 1] = face.landmarks[53 * 2 + 1];
+//
+//
+//            //鼻子下沿
+//            distance = face.landmarks[52 * 2] - face.landmarks[51 * 2];
+//            average = distance / 4;
+//            updateLandmarks[47 * 2] = face.landmarks[51 * 2];
+//            updateLandmarks[47 * 2 + 1] = face.landmarks[51 * 2 + 1];
+//
+//            updateLandmarks[48 * 2] = (float) (updateLandmarks[47 * 2] + average);
+//            updateLandmarks[48 * 2 + 1] = face.landmarks[51 * 2 + 1] + 2;
+//
+//            updateLandmarks[49 * 2] = (float) (updateLandmarks[48 * 2] + average);
+//            updateLandmarks[49 * 2 + 1] = face.landmarks[51 * 2 + 1] + 3;
+//
+//            updateLandmarks[50 * 2] = (float) (updateLandmarks[49 * 2] + average);
+//            updateLandmarks[50 * 2 + 1] = face.landmarks[51 * 2 + 1] + 2;
+//
+//            updateLandmarks[51 * 2] = face.landmarks[52 * 2];
+//            updateLandmarks[51 * 2 + 1] = face.landmarks[52 * 2 + 1];
+
+
+            //左眼
+            updateLandmarks[52 * 2] = face.landmarks[13 * 2];
+            updateLandmarks[52 * 2 + 1] = face.landmarks[13 * 2 + 1];
+            updateLandmarks[53 * 2] = face.landmarks[14 * 2];
+            updateLandmarks[53 * 2 + 1] = face.landmarks[14 * 2 + 1];
+            updateLandmarks[54 * 2] = face.landmarks[16 * 2];
+            updateLandmarks[54 * 2 + 1] = face.landmarks[16 * 2 + 1];
+            updateLandmarks[55 * 2] = face.landmarks[17 * 2];
+            updateLandmarks[55 * 2 + 1] = face.landmarks[17 * 2 + 1];
+            updateLandmarks[56 * 2] = face.landmarks[18 * 2];
+            updateLandmarks[56 * 2 + 1] = face.landmarks[18 * 2 + 1];
+            updateLandmarks[57 * 2] = face.landmarks[20 * 2];
+            updateLandmarks[57 * 2 + 1] = face.landmarks[20 * 2 + 1];
+            updateLandmarks[72 * 2] = face.landmarks[15 * 2];
+            updateLandmarks[72 * 2 + 1] = face.landmarks[15 * 2 + 1];
+            updateLandmarks[73 * 2] = face.landmarks[19 * 2];
+            updateLandmarks[73 * 2 + 1] = face.landmarks[19 * 2 + 1];
+            updateLandmarks[74 * 2] = face.landmarks[21 * 2];
+            updateLandmarks[74 * 2 + 1] = face.landmarks[21 * 2 + 1];
+            updateLandmarks[104 * 2] = face.landmarks[21 * 2];
+            updateLandmarks[104 * 2 + 1] = face.landmarks[21 * 2 + 1];
+
+
+            return updateLandmarks;
+            
+//
+//            //右眼
+//            updateLandmarks[58 * 2] = face.landmarks[30 * 2];
+//            updateLandmarks[58 * 2 + 1] = face.landmarks[30 * 2 + 1];
+//            updateLandmarks[59 * 2] = face.landmarks[31 * 2];
+//            updateLandmarks[59 * 2 + 1] = face.landmarks[31 * 2 + 1];
+//            updateLandmarks[60 * 2] = face.landmarks[33 * 2];
+//            updateLandmarks[60 * 2 + 1] = face.landmarks[33 * 2 + 1];
+//            updateLandmarks[61 * 2] = face.landmarks[34 * 2];
+//            updateLandmarks[61 * 2 + 1] = face.landmarks[34 * 2 + 1];
+//            updateLandmarks[62 * 2] = face.landmarks[35 * 2];
+//            updateLandmarks[62 * 2 + 1] = face.landmarks[35 * 2 + 1];
+//            updateLandmarks[63 * 2] = face.landmarks[37 * 2];
+//            updateLandmarks[63 * 2 + 1] = face.landmarks[37 * 2 + 1];
+//            updateLandmarks[75 * 2] = face.landmarks[32 * 2];
+//            updateLandmarks[75 * 2 + 1] = face.landmarks[32 * 2 + 1];
+//            updateLandmarks[76 * 2] = face.landmarks[36 * 2];
+//            updateLandmarks[76 * 2 + 1] = face.landmarks[36 * 2 + 1];
+//            updateLandmarks[77 * 2] = face.landmarks[18 * 2];
+//            updateLandmarks[77 * 2 + 1] = face.landmarks[18 * 2 + 1];
+//            updateLandmarks[105 * 2] = face.landmarks[18 * 2];
+//            updateLandmarks[105 * 2 + 1] = face.landmarks[18 * 2 + 1];
+//
+//            //眉毛下沿
+//            for (int i = 64, j = 29; i < 68; i++, j--) {
+//                updateLandmarks[i * 2] = face.landmarks[j * 2];
+//                updateLandmarks[i * 2 + 1] = face.landmarks[j * 2 + 1];
+//            }
+//            for (int i = 68, j = 46; i < 72; i++, j--) {
+//                updateLandmarks[i * 2] = face.landmarks[j * 2];
+//                updateLandmarks[i * 2 + 1] = face.landmarks[j * 2 + 1];
+//            }
+//
+//            //上嘴唇上沿
+//            updateLandmarks[84 * 2] = face.landmarks[58 * 2];
+//            updateLandmarks[84 * 2 + 1] = face.landmarks[58 * 2 + 1];
+//            updateLandmarks[85 * 2] = face.landmarks[59 * 2];
+//            updateLandmarks[85 * 2 + 1] = face.landmarks[59 * 2 + 1];
+//            updateLandmarks[86 * 2] = (face.landmarks[59 * 2] + face.landmarks[60 * 2]) / 2;
+//            updateLandmarks[86 * 2 + 1] = (face.landmarks[59 * 2] + face.landmarks[60 * 2]) / 2;
+//            updateLandmarks[87 * 2] = face.landmarks[60 * 2];
+//            updateLandmarks[87 * 2 + 1] = face.landmarks[60 * 2 + 1];
+//            updateLandmarks[88 * 2] = (face.landmarks[61 * 2] + face.landmarks[60 * 2]) / 2;
+//            updateLandmarks[88 * 2 + 1] = (face.landmarks[61 * 2] + face.landmarks[60 * 2]) / 2;
+//            updateLandmarks[89 * 2] = face.landmarks[61 * 2];
+//            updateLandmarks[89 * 2 + 1] = face.landmarks[61 * 2 + 1];
+//            updateLandmarks[90 * 2] = face.landmarks[62 * 2];
+//            updateLandmarks[90 * 2 + 1] = face.landmarks[62 * 2 + 1];
+//
+//            //下嘴唇下沿
+//            distance = face.landmarks[62 * 2] - face.landmarks[58 * 2];
+//            average = distance / 6;
+//            updateLandmarks[91 * 2] = (float) (updateLandmarks[90 * 2] - average);
+//            updateLandmarks[92 * 2] = (float) (updateLandmarks[90 * 2] - average * 2);
+//            updateLandmarks[93 * 2] = face.landmarks[64 * 2];
+//            updateLandmarks[94 * 2] = (float) (updateLandmarks[90 * 2] - average * 4);
+//            updateLandmarks[95 * 2] = (float) (updateLandmarks[90 * 2] - average * 5);
+//
+//            distance = face.landmarks[64 * 2 + 1] - face.landmarks[62 * 2 + 1];
+//            average = distance / 3;
+//            updateLandmarks[91 * 2 + 1] = (float) (updateLandmarks[90 * 2 + 1] + average);
+//            updateLandmarks[92 * 2 + 1] = (float) (updateLandmarks[90 * 2 + 1] + average * 2);
+//            updateLandmarks[93 * 2 + 1] = face.landmarks[64 * 2 + 1];
+//            updateLandmarks[94 * 2 + 1] = (float) (updateLandmarks[90 * 2 + 1] + average * 2);
+//            updateLandmarks[95 * 2 + 1] = (float) (updateLandmarks[90 * 2 + 1] + average);
+//
+//            //上嘴唇下沿
+//            updateLandmarks[96 * 2] = face.landmarks[58 * 2];
+//            updateLandmarks[96 * 2 + 1] = face.landmarks[58 * 2 + 1];
+//            updateLandmarks[97 * 2] = face.landmarks[66 * 2];
+//            updateLandmarks[97 * 2 + 1] = face.landmarks[66 * 2 + 1];
+//            updateLandmarks[98 * 2] = face.landmarks[67 * 2];
+//            updateLandmarks[98 * 2 + 1] = face.landmarks[67 * 2 + 1];
+//            updateLandmarks[99 * 2] = face.landmarks[68 * 2];
+//            updateLandmarks[99 * 2 + 1] = face.landmarks[68 * 2 + 1];
+//            updateLandmarks[100 * 2] = face.landmarks[62 * 2];
+//            updateLandmarks[100 * 2 + 1] = face.landmarks[62 * 2 + 1];
+//
+//            //下嘴唇上沿
+//            for (int i = 101, j = 69; i < 104; i++, j++) {
+//                updateLandmarks[i * 2] = face.landmarks[j * 2];
+//                updateLandmarks[i * 2 + 1] = face.landmarks[j * 2 + 1];
+//            }
+//
+//            return updateLandmarks;
+        }
+
+
+
 
         /**
          * 初始化人脸检测

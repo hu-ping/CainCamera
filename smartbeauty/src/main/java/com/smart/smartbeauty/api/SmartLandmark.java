@@ -51,6 +51,8 @@ public class SmartLandmark {
      * @param index
      */
     public void putOneFace(int index, SmartOneFace oneFace) {
+
+
         OneFace one = toOneFace(oneFace);
         LandmarkEngine.getInstance().putOneFace(index, one);
     }
@@ -71,6 +73,7 @@ public class SmartLandmark {
     }
 
     private static SmartOneFace toSmartOneFace(OneFace face) {
+
         SmartOneFace copy = new SmartOneFace();
 
         copy.confidence = face.confidence;
@@ -79,7 +82,10 @@ public class SmartLandmark {
         copy.roll = face.roll;
         copy.age = face.age;
         copy.gender = face.gender;
-        copy.vertexPoints = face.vertexPoints.clone();
+
+        if (face.vertexPoints != null) {
+            copy.vertexPoints = face.vertexPoints.clone();
+        }
 
         return copy;
     }

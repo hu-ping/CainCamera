@@ -412,8 +412,8 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
         @Override
         public void onPreviewFrame(byte[] data, Camera camera) {
             // 人脸检测
-//            FaceTracker.getInstance().trackFace(data,
-//                    mCameraParam.previewWidth, mCameraParam.previewHeight);
+            FaceTracker.getInstance().trackFace(data,
+                    mCameraParam.previewWidth, mCameraParam.previewHeight);
 
             if (CameraParam.getInstance().previewBuffer  != null) {
                 camera.addCallbackBuffer(CameraParam.getInstance().previewBuffer);
@@ -612,27 +612,27 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
      * 初始化人脸检测器
      */
     private void initTracker() {
-//        FaceTracker.getInstance().setFaceCallback(mFaceTrackerCallback);
-//
-//        FaceTracker.getInstance().initTracker();
+        FaceTracker.getInstance().setFaceCallback(mFaceTrackerCallback);
+
+        FaceTracker.getInstance().initTracker();
     }
 
     /**
      * 销毁人脸检测器
      */
     private void releaseFaceTracker() {
-//        FaceTracker.getInstance().destroyTracker();
+        FaceTracker.getInstance().destroyTracker();
     }
 
     /**
      * 准备人脸检测器
      */
     private void prepareTracker() {
-//        FaceTracker.getInstance()
-//                .setBackCamera(mCameraParam.backCamera);
-//
-//        FaceTracker.getInstance().prepareFaceTracker(mActivity, mActivationCode, mCameraParam.orientation,
-//                        mCameraParam.previewWidth, mCameraParam.previewHeight);
+        FaceTracker.getInstance()
+                .setBackCamera(mCameraParam.backCamera);
+
+        FaceTracker.getInstance().prepareFaceTracker(mActivity, mActivationCode, mCameraParam.orientation,
+                        mCameraParam.previewWidth, mCameraParam.previewHeight);
     }
 
     /**
@@ -642,7 +642,7 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
         @Override
             public void onTrackingFinish() {
                 // 检测完成需要请求刷新
-//                SmartBeautyRender.getInstance().requestRender();
+                SmartBeautyRender.getInstance().requestRender();
         }
     };
 

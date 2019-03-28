@@ -330,8 +330,10 @@ public final class RenderManager {
      * 绘制调试用的人脸关键点
      * @param mCurrentTexture
      */
+
     public void drawFacePoint(int mCurrentTexture) {
         if (mFilterArrays.get(RenderIndex.FacePointIndex) != null) {
+            mCameraParam.drawFacePoints = true;
             if (mCameraParam.drawFacePoints && LandmarkEngine.getInstance().hasFace()) {
                 mFilterArrays.get(RenderIndex.FacePointIndex).drawFrame(mCurrentTexture, mDisplayVertexBuffer, mDisplayTextureBuffer);
             }
