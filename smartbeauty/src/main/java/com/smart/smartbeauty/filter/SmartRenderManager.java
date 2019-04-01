@@ -43,7 +43,7 @@ public final class SmartRenderManager {
     }
 
     private SmartRenderManager() {
-        beautyParam = SmartBeautyParam.getInstance();
+        mBeautyParam = SmartBeautyParam.getInstance();
     }
 
     public static SmartRenderManager getInstance() {
@@ -67,7 +67,7 @@ public final class SmartRenderManager {
     private int mTextureWidth, mTextureHeight;
 
     // 相机参数
-    private SmartBeautyParam beautyParam;
+    private SmartBeautyParam mBeautyParam;
     // 上下文
     private Context mContext;
 
@@ -275,12 +275,12 @@ public final class SmartRenderManager {
         currentTexture = mFilterArrays.get(SmartRenderIndex.CameraIndex)
                 .drawFrameBuffer(currentTexture, mVertexBuffer, mTextureBuffer);
         // 如果处于对比状态，不做处理
-        if (!beautyParam.showCompare) {
+        if (!mBeautyParam.showCompare) {
             // 美颜滤镜
             if (mFilterArrays.get(SmartRenderIndex.BeautyIndex) != null) {
                 if (mFilterArrays.get(SmartRenderIndex.BeautyIndex) instanceof IBeautify
-                        && beautyParam != null) {
-                    ((IBeautify) mFilterArrays.get(SmartRenderIndex.BeautyIndex)).onBeauty(beautyParam);
+                        && mBeautyParam != null) {
+                    ((IBeautify) mFilterArrays.get(SmartRenderIndex.BeautyIndex)).onBeauty(mBeautyParam);
                 }
                 currentTexture = mFilterArrays.get(SmartRenderIndex.BeautyIndex).drawFrameBuffer(currentTexture, mVertexBuffer, mTextureBuffer);
             }
@@ -293,7 +293,7 @@ public final class SmartRenderManager {
             // 美型滤镜
             if (mFilterArrays.get(SmartRenderIndex.FaceAdjustIndex) != null) {
                 if (mFilterArrays.get(SmartRenderIndex.FaceAdjustIndex) instanceof IBeautify) {
-                    ((IBeautify) mFilterArrays.get(SmartRenderIndex.FaceAdjustIndex)).onBeauty(beautyParam);
+                    ((IBeautify) mFilterArrays.get(SmartRenderIndex.FaceAdjustIndex)).onBeauty(mBeautyParam);
                 }
                 currentTexture = mFilterArrays.get(SmartRenderIndex.FaceAdjustIndex).drawFrameBuffer(currentTexture, mVertexBuffer, mTextureBuffer);
             }
@@ -310,13 +310,13 @@ public final class SmartRenderManager {
 
             // 景深
             if (mFilterArrays.get(SmartRenderIndex.DepthBlurIndex) != null) {
-                mFilterArrays.get(SmartRenderIndex.DepthBlurIndex).setFilterEnable(beautyParam.enableDepthBlur);
+                mFilterArrays.get(SmartRenderIndex.DepthBlurIndex).setFilterEnable(mBeautyParam.enableDepthBlur);
                 currentTexture = mFilterArrays.get(SmartRenderIndex.DepthBlurIndex).drawFrameBuffer(currentTexture, mVertexBuffer, mTextureBuffer);
             }
 
             // 暗角
             if (mFilterArrays.get(SmartRenderIndex.VignetteIndex) != null) {
-                mFilterArrays.get(SmartRenderIndex.VignetteIndex).setFilterEnable(beautyParam.enableVignette);
+                mFilterArrays.get(SmartRenderIndex.VignetteIndex).setFilterEnable(mBeautyParam.enableVignette);
                 currentTexture = mFilterArrays.get(SmartRenderIndex.VignetteIndex).drawFrameBuffer(currentTexture, mVertexBuffer, mTextureBuffer);
             }
         }
@@ -332,9 +332,9 @@ public final class SmartRenderManager {
      * @param mCurrentTexture
      */
     public void drawFacePoint(int mCurrentTexture) {
-        beautyParam.drawFacePoints = true;
+        mBeautyParam.drawFacePoints = true;
         if (mFilterArrays.get(SmartRenderIndex.FacePointIndex) != null) {
-            if (beautyParam.drawFacePoints && LandmarkEngine.getInstance().hasFace()) {
+            if (mBeautyParam.drawFacePoints && LandmarkEngine.getInstance().hasFace()) {
                 mFilterArrays.get(SmartRenderIndex.FacePointIndex).drawFrame(mCurrentTexture, mDisplayVertexBuffer, mDisplayTextureBuffer);
             }
         }

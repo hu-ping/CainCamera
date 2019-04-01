@@ -35,12 +35,11 @@ public class SmartBeautyParam extends BeautyParam {
     public void reset() {
         super.reset();
 
-        showCompare = true;
+        showCompare = false;
         enableDepthBlur = false;
         enableVignette = false;
 
-
-        drawFacePoints = true;
+        drawFacePoints = false;
     }
 
 }

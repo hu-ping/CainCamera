@@ -447,6 +447,10 @@ public final class FaceTracker {
             LandmarkEngine.getInstance().setOrientation(orientation);
             // 设置是否需要翻转
             LandmarkEngine.getInstance().setNeedFlip(faceTrackParam.previewTrack && faceTrackParam.isBackCamera);
+            Log.e(TAG, "orientation == " + orientation
+                    + ", previewTrack = " + faceTrackParam.previewTrack
+                    + ", isBackCamera = " + faceTrackParam.isBackCamera);
+
 
             // 计算人脸关键点
             if (faces != null && faces.length > 0) {
