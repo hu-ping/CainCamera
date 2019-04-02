@@ -13,7 +13,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 
-import android.util.Log;
 import android.util.Size;
 import android.util.TypedValue;
 
@@ -42,7 +41,6 @@ import com.smart.smartbeauty.api.SmartBeautyRender;
 import com.smart.smartbeauty.api.SmartBeautyResource;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.List;
 
 /**

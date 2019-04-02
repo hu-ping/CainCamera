@@ -40,8 +40,9 @@ public class SmartLandmark {
      * 获取一个人脸关键点数据对象
      * @return
      */
-    public OneFace getOneFace(int index) {
-        return LandmarkEngine.getInstance().getOneFace(index);
+    public SmartOneFace getOneFace(int index) {
+        OneFace one =  LandmarkEngine.getInstance().getOneFace(index);
+        return toSmartOneFace(one);
     }
 
 
@@ -49,9 +50,9 @@ public class SmartLandmark {
      * 插入一个人脸关键点数据对象
      * @param index
      */
-    public void putOneFace(int index, OneFace oneFace) {
-
-        LandmarkEngine.getInstance().putOneFace(index, oneFace);
+    public void putOneFace(int index, SmartOneFace oneFace) {
+        OneFace one = toOneFace(oneFace);
+        LandmarkEngine.getInstance().putOneFace(index, one);
     }
 
     /**
@@ -85,7 +86,7 @@ public class SmartLandmark {
         copy.gender = face.gender;
 
         if (face.vertexPoints != null) {
-            copy.vertexPoints = face.vertexPoints.clone();
+            copy.vertexPoints = face.vertexPoints;
         }
 
         return copy;
@@ -100,7 +101,7 @@ public class SmartLandmark {
         copy.roll = face.roll;
         copy.age = face.age;
         copy.gender = face.gender;
-        copy.vertexPoints = face.vertexPoints.clone();
+        copy.vertexPoints = face.vertexPoints;
 
         return copy;
     }

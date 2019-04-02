@@ -8,7 +8,6 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.cgfay.landmarklibrary.OneFace;
 import com.deepglint.hri.face.FaceSDKManager;
 import com.deepglint.hri.facesdk.FaceAttributes;
 import com.deepglint.hri.facesdk.FaceInfo;
@@ -451,7 +450,7 @@ public final class FaceTracker {
 
                     FaceInfo face = faceInfos[index];
 
-                    OneFace oneFace = SmartLandmark.getInstance().getOneFace(index);
+                    SmartOneFace oneFace = SmartLandmark.getInstance().getOneFace(index);
 //                    // 是否检测性别年龄属性
 //                    if (faceTrackParam.enableFaceProperty) {
 //                        facepp.getAgeGender(face);
@@ -472,9 +471,9 @@ public final class FaceTracker {
                     );
 
                     if(attributes.gender == 0) {
-                        oneFace.gender = OneFace.GENDER_MAN;
+                        oneFace.gender = SmartOneFace.GENDER_MAN;
                     }else if(attributes.gender == 1){
-                        oneFace.gender = OneFace.GENDER_WOMAN;
+                        oneFace.gender = SmartOneFace.GENDER_WOMAN;
                     }else{
                         oneFace.gender = -1;
                     }

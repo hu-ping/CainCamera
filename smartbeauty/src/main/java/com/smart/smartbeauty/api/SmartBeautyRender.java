@@ -8,6 +8,7 @@ import android.util.Log;
 import android.util.Size;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.TextureView;
 
 import com.cgfay.filterlibrary.glfilter.color.bean.DynamicColor;
 import com.cgfay.filterlibrary.glfilter.makeup.bean.DynamicMakeup;
@@ -36,7 +37,9 @@ public class SmartBeautyRender{
     // 操作锁
     private final Object mSynOperation = new Object();
 
-    private WeakReference<SurfaceView> mWeakSurfaceView;
+    private WeakReference<SurfaceView> mWeakSurfaceView = null;
+
+    private TextureView mTextureView = null;
     /**
      * 单例
      */
@@ -170,6 +173,35 @@ public class SmartBeautyRender{
         }
 
     };
+
+
+//    public void setmTextureView(TextureView textureView) {
+//        this.mTextureView = textureView;
+//        mTextureView.setSurfaceTextureListener(mSurfaceTextureListener);
+//    }
+//
+//    private TextureView.SurfaceTextureListener mSurfaceTextureListener = new TextureView.SurfaceTextureListener() {
+//        @Override
+//        public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
+//
+//        }
+//
+//        @Override
+//        public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
+//
+//        }
+//
+//        @Override
+//        public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+//            return false;
+//        }
+//
+//        @Override
+//        public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+//
+//        }
+//    };
+
 
 
     /**

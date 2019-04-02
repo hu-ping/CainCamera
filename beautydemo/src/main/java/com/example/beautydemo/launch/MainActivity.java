@@ -22,7 +22,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private boolean mOnClick;
 
-    private String activationCode = "xx-xx-xx" ;
+    private String activationCode = "6d3fe3b7-36d7-4382-bf7b-e6b8bfe639cc" ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
