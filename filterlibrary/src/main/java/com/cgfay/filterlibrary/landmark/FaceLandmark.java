@@ -1,4 +1,4 @@
-package com.cgfay.landmarklibrary;
+package com.cgfay.filterlibrary.landmark;
 
 /**
  * 关键点索引（106个关键点 + 扩展8个关键点）

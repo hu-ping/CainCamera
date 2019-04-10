@@ -4,7 +4,7 @@ import android.opengl.GLES30;
 
 import com.cgfay.filterlibrary.glfilter.makeup.bean.MakeupBaseData;
 import com.cgfay.filterlibrary.glfilter.utils.OpenGLUtils;
-import com.cgfay.landmarklibrary.LandmarkEngine;
+import com.cgfay.filterlibrary.landmark.LandmarkEngine;
 
 import java.nio.FloatBuffer;
 

@@ -1,4 +1,4 @@
-package com.cgfay.landmarklibrary;
+package com.cgfay.filterlibrary.landmark;
 
 import android.util.SparseArray;
 

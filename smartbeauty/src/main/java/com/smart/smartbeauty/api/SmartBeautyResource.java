@@ -26,7 +26,7 @@ import java.util.List;
  */
 
 public class SmartBeautyResource {
-    private static final String TAG = "Smart";
+    private static final String TAG = "SmartBeautyResource";
     // 资源列表(贴纸啥的)
     private static  List<ResourceData> mResourceList = null;
 

@@ -7,8 +7,8 @@ import android.util.SparseArray;
 
 import com.cgfay.filterlibrary.glfilter.base.GLImageFilter;
 import com.cgfay.filterlibrary.glfilter.utils.OpenGLUtils;
-import com.cgfay.landmarklibrary.LandmarkEngine;
-import com.cgfay.landmarklibrary.OneFace;
+import com.cgfay.filterlibrary.landmark.LandmarkEngine;
+import com.cgfay.filterlibrary.landmark.OneFace;
 
 import java.nio.FloatBuffer;
 

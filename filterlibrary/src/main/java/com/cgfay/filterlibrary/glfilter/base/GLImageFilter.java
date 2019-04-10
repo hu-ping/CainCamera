@@ -5,8 +5,7 @@ import android.graphics.PointF;
 import android.opengl.GLES30;
 import android.text.TextUtils;
 
-import com.badlogic.gdx.math.Camera;
-import com.badlogic.gdx.math.Vector3;
+
 import com.cgfay.filterlibrary.glfilter.stickers.StaticStickerNormalFilter;
 import com.cgfay.filterlibrary.glfilter.utils.OpenGLUtils;
 import com.cgfay.filterlibrary.glfilter.utils.TextureRotationUtils;

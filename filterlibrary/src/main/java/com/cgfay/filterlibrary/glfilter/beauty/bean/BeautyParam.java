@@ -43,7 +43,29 @@ public class BeautyParam {
     // 美牙 0.0 ~ 1.0f
     public float teethBeautyIntensity;
 
-    public BeautyParam() {
+
+    // 是否显示对比效果
+    public boolean showCompare;
+    // 是否允许景深
+    public boolean enableDepthBlur;
+    // 是否允许暗角
+    public boolean enableVignette;
+    // 是否显示人脸关键点
+    public boolean drawFacePoints;
+
+    private static final BeautyParam mInstance = new BeautyParam();
+
+    /**
+     * 获取相机配置参数
+     * @return
+     */
+    public static BeautyParam getInstance() {
+        return mInstance;
+    }
+
+
+
+    private BeautyParam() {
         reset();
     }
 
@@ -70,5 +92,11 @@ public class BeautyParam {
         proboscisIntensity = 0.0f;
         mouthEnlargeIntensity = 0.0f;
         teethBeautyIntensity = 0.0f;
+
+
+        showCompare = false;
+        enableDepthBlur = false;
+        enableVignette = false;
+        drawFacePoints = false;
     }
 }

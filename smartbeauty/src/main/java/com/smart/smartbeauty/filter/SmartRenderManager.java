@@ -12,6 +12,7 @@ import com.cgfay.filterlibrary.glfilter.base.GLImageFilter;
 import com.cgfay.filterlibrary.glfilter.base.GLImageOESInputFilter;
 import com.cgfay.filterlibrary.glfilter.base.GLImageVignetteFilter;
 import com.cgfay.filterlibrary.glfilter.beauty.GLImageBeautyFilter;
+import com.cgfay.filterlibrary.glfilter.beauty.bean.BeautyParam;
 import com.cgfay.filterlibrary.glfilter.beauty.bean.IBeautify;
 import com.cgfay.filterlibrary.glfilter.color.GLImageDynamicColorFilter;
 import com.cgfay.filterlibrary.glfilter.color.bean.DynamicColor;
@@ -26,8 +27,7 @@ import com.cgfay.filterlibrary.glfilter.stickers.StaticStickerNormalFilter;
 import com.cgfay.filterlibrary.glfilter.stickers.bean.DynamicSticker;
 import com.cgfay.filterlibrary.glfilter.utils.OpenGLUtils;
 import com.cgfay.filterlibrary.glfilter.utils.TextureRotationUtils;
-import com.cgfay.landmarklibrary.LandmarkEngine;
-import com.smart.smartbeauty.api.SmartBeautyParam;
+import com.cgfay.filterlibrary.landmark.LandmarkEngine;
 
 import java.nio.FloatBuffer;
 
@@ -43,7 +43,7 @@ public final class SmartRenderManager {
     }
 
     private SmartRenderManager() {
-        mBeautyParam = SmartBeautyParam.getInstance();
+        mBeautyParam = BeautyParam.getInstance();
     }
 
     public static SmartRenderManager getInstance() {
@@ -67,7 +67,7 @@ public final class SmartRenderManager {
     private int mTextureWidth, mTextureHeight;
 
     // 相机参数
-    private SmartBeautyParam mBeautyParam;
+    private BeautyParam mBeautyParam;
     // 上下文
     private Context mContext;
 
@@ -332,7 +332,7 @@ public final class SmartRenderManager {
      * @param mCurrentTexture
      */
     public void drawFacePoint(int mCurrentTexture) {
-        mBeautyParam.drawFacePoints = true;
+        mBeautyParam.drawFacePoints = false;
         if (mFilterArrays.get(SmartRenderIndex.FacePointIndex) != null) {
             if (mBeautyParam.drawFacePoints && LandmarkEngine.getInstance().hasFace()) {
                 mFilterArrays.get(SmartRenderIndex.FacePointIndex).drawFrame(mCurrentTexture, mDisplayVertexBuffer, mDisplayTextureBuffer);

@@ -4,7 +4,6 @@ import android.content.Context;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.MotionEvent;
-import android.widget.Toast;
 
 import com.badlogic.gdx.math.Vector3;
 import com.cgfay.cameralibrary.engine.camera.CameraParam;
@@ -28,7 +27,7 @@ import com.cgfay.filterlibrary.glfilter.stickers.StaticStickerNormalFilter;
 import com.cgfay.filterlibrary.glfilter.stickers.bean.DynamicSticker;
 import com.cgfay.filterlibrary.glfilter.utils.OpenGLUtils;
 import com.cgfay.filterlibrary.glfilter.utils.TextureRotationUtils;
-import com.cgfay.landmarklibrary.LandmarkEngine;
+import com.cgfay.filterlibrary.landmark.LandmarkEngine;
 
 import java.nio.FloatBuffer;
 

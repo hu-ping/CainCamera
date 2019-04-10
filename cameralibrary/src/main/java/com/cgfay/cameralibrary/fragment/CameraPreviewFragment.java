@@ -50,7 +50,7 @@ import com.cgfay.filterlibrary.glfilter.color.bean.DynamicColor;
 import com.cgfay.filterlibrary.glfilter.resource.FilterHelper;
 import com.cgfay.filterlibrary.glfilter.resource.ResourceJsonCodec;
 import com.cgfay.filterlibrary.multimedia.VideoCombiner;
-import com.cgfay.landmarklibrary.LandmarkEngine;
+import com.cgfay.filterlibrary.landmark.LandmarkEngine;
 import com.cgfay.utilslibrary.fragment.PermissionConfirmDialogFragment;
 import com.cgfay.utilslibrary.fragment.PermissionErrorDialogFragment;
 import com.cgfay.utilslibrary.utils.BitmapUtils;

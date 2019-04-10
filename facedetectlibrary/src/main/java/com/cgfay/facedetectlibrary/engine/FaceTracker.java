@@ -11,8 +11,8 @@ import com.cgfay.facedetectlibrary.listener.FaceTrackerCallback;
 import com.cgfay.facedetectlibrary.utils.ConUtil;
 import com.cgfay.facedetectlibrary.utils.FaceppConstraints;
 import com.cgfay.facedetectlibrary.utils.SensorEventUtil;
-import com.cgfay.landmarklibrary.LandmarkEngine;
-import com.cgfay.landmarklibrary.OneFace;
+import com.cgfay.filterlibrary.landmark.LandmarkEngine;
+import com.cgfay.filterlibrary.landmark.OneFace;
 import com.megvii.facepp.sdk.Facepp;
 import com.megvii.licensemanager.sdk.LicenseManager;
 
@@ -447,9 +447,9 @@ public final class FaceTracker {
             LandmarkEngine.getInstance().setOrientation(orientation);
             // 设置是否需要翻转
             LandmarkEngine.getInstance().setNeedFlip(faceTrackParam.previewTrack && faceTrackParam.isBackCamera);
-            Log.e(TAG, "orientation == " + orientation
-                    + ", previewTrack = " + faceTrackParam.previewTrack
-                    + ", isBackCamera = " + faceTrackParam.isBackCamera);
+//            Log.e(TAG, "orientation == " + orientation
+//                    + ", previewTrack = " + faceTrackParam.previewTrack
+//                    + ", isBackCamera = " + faceTrackParam.isBackCamera);
 
 
             // 计算人脸关键点
@@ -507,7 +507,7 @@ public final class FaceTracker {
                         oneFace.vertexPoints = new float[face.points.length * 2];
                     }
                     for (int i = 0; i < face.points.length; i++) {
-                        Log.e(TAG, i + " == x:" + face.points[i].x + ", y:" + face.points[i].y);
+//                        Log.e(TAG, i + " == x:" + face.points[i].x + ", y:" + face.points[i].y);
                         // orientation = 0、3 表示竖屏，1、2 表示横屏
                         float x = (face.points[i].x / height) * 2 - 1;
                         float y = (face.points[i].y / width) * 2 - 1;
@@ -529,21 +529,21 @@ public final class FaceTracker {
                                 point[1] = -x;
                             }
                         } else if (orientation == 3) {
-                            Log.e(TAG, "1...........................");
+//                            Log.e(TAG, "1...........................");
                             point[0] = -x;
                             point[1] = y;
                         }
                         // 顶点坐标
                         if (faceTrackParam.previewTrack) {
                             if (faceTrackParam.isBackCamera) {
-                                Log.e(TAG, "2...........................");
+//                                Log.e(TAG, "2...........................");
                                 oneFace.vertexPoints[2 * i] = point[0];
                             } else {
 //                                Log.e(TAG, "3...........................");
                                 oneFace.vertexPoints[2 * i] = -point[0];
                             }
                         } else { // 非预览状态下，左右不需要翻转
-                            Log.e(TAG, "4...........................");
+//                            Log.e(TAG, "4...........................");
                             oneFace.vertexPoints[2 * i] = point[0];
                         }
                         oneFace.vertexPoints[2 * i + 1] = point[1];
@@ -551,11 +551,11 @@ public final class FaceTracker {
 
                     }
 
-                    Log.e(TAG, "faceIndex == " + faceIndex++ + ", landmark size == " + oneFace.vertexPoints.length);
-                    for(int i = 0; i < oneFace.vertexPoints.length; i += 2) {
-                        Log.e(TAG, (i/2) + "== [" + oneFace.vertexPoints[i]
-                                + "," + oneFace.vertexPoints[i + 1]  + "]");
-                    }
+//                    Log.e(TAG, "faceIndex == " + faceIndex++ + ", landmark size == " + oneFace.vertexPoints.length);
+//                    for(int i = 0; i < oneFace.vertexPoints.length; i += 2) {
+//                        Log.e(TAG, (i/2) + "== [" + oneFace.vertexPoints[i]
+//                                + "," + oneFace.vertexPoints[i + 1]  + "]");
+//                    }
 
                     // 插入人脸对象
                     LandmarkEngine.getInstance().putOneFace(index, oneFace);

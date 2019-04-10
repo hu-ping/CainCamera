@@ -88,11 +88,11 @@ public class SmartLeastSquares {
         }
 //        Log.e(TAG,"The values of the coefficients are as follows:");
         for (i=0;i<n;i++)
-            Log.e(TAG, "x^" + i + "=" + a[i]);            // Print the values of x^0,x^1,x^2,x^3,....
+//            Log.e(TAG, "x^" + i + "=" + a[i]);            // Print the values of x^0,x^1,x^2,x^3,....
 
 //        Log.e(TAG, "Hence the fitted Polynomial is given by: y=");
         for (i=0;i<n;i++) {
-            Log.e(TAG, " + (" + a[i] + ")" + "x^" + i);
+//            Log.e(TAG, " + (" + a[i] + ")" + "x^" + i);
         }
 
         return a;

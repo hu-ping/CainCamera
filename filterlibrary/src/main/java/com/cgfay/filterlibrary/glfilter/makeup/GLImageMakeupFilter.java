@@ -10,7 +10,7 @@ import com.cgfay.filterlibrary.glfilter.makeup.bean.DynamicMakeup;
 import com.cgfay.filterlibrary.glfilter.makeup.bean.MakeupBaseData;
 import com.cgfay.filterlibrary.glfilter.makeup.bean.MakeupType;
 import com.cgfay.filterlibrary.glfilter.utils.OpenGLUtils;
-import com.cgfay.landmarklibrary.LandmarkEngine;
+import com.cgfay.filterlibrary.landmark.LandmarkEngine;
 
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;

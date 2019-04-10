@@ -387,9 +387,6 @@ public final class FaceTracker {
         static int faceIndex = 0;
         static int faceCaptureIndex = 0;
         private synchronized void internalTrackFace(byte[] data, int width, int height) {
-            Log.e(TAG, "cameraRotation == " + cameraRotation);
-
-
             FaceTrackParam faceTrackParam = FaceTrackParam.getInstance();
 
             ImageFrame frame = new ImageFrame();
@@ -405,8 +402,12 @@ public final class FaceTracker {
                 Core.flip(image, image, 0);
                 Core.flip(image, image, 1);
             }else if(cameraRotation == 270) {
+//                Core.transpose(image, image);
+//                Core.flip(image, image, 0);
+
+
                 Core.transpose(image, image);
-                Core.flip(image, image, 0);
+                Core.flip(image, image, 1);
             }
             long now = System.currentTimeMillis();
             FaceInfo[] faceInfos = faceSDKManager.getTrackingFaces(image, System.currentTimeMillis());
@@ -491,6 +492,9 @@ public final class FaceTracker {
                     oneFace.pitch = orientation[1];
                     oneFace.roll = orientation[2];
 
+
+//                    Log.e(TAG, "yaw = " + oneFace.yaw + ", pitch = " + oneFace.pitch + ", roll = " + oneFace.roll);
+
                     if (faceTrackParam.previewTrack) {
 
                         if (faceTrackParam.isBackCamera) {
@@ -519,7 +523,7 @@ public final class FaceTracker {
 //                    float[] updateLandmarks  = face.landmarks.clone();
 
                     for (int i = 0; i <  updateLandmarks.length/2; i++) {
-                        Log.e(TAG, i + " == x:" +  updateLandmarks[i * 2] + ", y:" +  updateLandmarks[i * 2 + 1]);
+//                        Log.e(TAG, i + " == x:" +  updateLandmarks[i * 2] + ", y:" +  updateLandmarks[i * 2 + 1]);
 
                         // orientation = 0、3 表示竖屏，1、2 表示横屏
                         float x = ( updateLandmarks[i * 2] / height) * 2 - 1;
@@ -559,11 +563,11 @@ public final class FaceTracker {
                         oneFace.vertexPoints[2 * i + 1] = point[1];
                     }
 
-                    Log.e(TAG, "faceIndex == " + faceIndex++ + ", landmark size == " + oneFace.vertexPoints.length);
-                    for(int i = 0; i < oneFace.vertexPoints.length; i += 2) {
-                        Log.e(TAG, (i/2) + "== [" + oneFace.vertexPoints[i]
-                                + "," + oneFace.vertexPoints[i + 1]  + "]");
-                    }
+//                    Log.e(TAG, "faceIndex == " + faceIndex++ + ", landmark size == " + oneFace.vertexPoints.length);
+//                    for(int i = 0; i < oneFace.vertexPoints.length; i += 2) {
+//                        Log.e(TAG, (i/2) + "== [" + oneFace.vertexPoints[i]
+//                                + "," + oneFace.vertexPoints[i + 1]  + "]");
+//                    }
 
                     // 插入人脸对象
                     SmartLandmark.getInstance().putOneFace(index, oneFace);
@@ -597,9 +601,9 @@ public final class FaceTracker {
                 yArr[i] = face.landmarks[i * 2 + 1];
             }
 
-            for (int i = 0; i < 13; i++) {
-                Log.i(TAG, i + " == x:" + xArr[i] + ", y:" + yArr[i]);
-            }
+//            for (int i = 0; i < 13; i++) {
+//                Log.i(TAG, i + " == x:" + xArr[i] + ", y:" + yArr[i]);
+//            }
 
 
 //            for(int i = 0; i < 30; i++) {

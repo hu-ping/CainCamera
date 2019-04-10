@@ -29,10 +29,7 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-
-
-
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support:support-v4:27.1.1'
     implementation 'com.android.support:recyclerview-v7:27.1.1'
@@ -41,12 +38,7 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-
-
-
-
-    compile project(path: ':filterlibrary')
-    compile project(path: ':gdxlibrary')
-    compile project(path: ':landmarklibrary')
-    compile project(path: ':utilslibrary')
+    implementation project(':filterlibrary')
+    implementation project(':gdxlibrary')
+    implementation project(':utilslibrary')
 }

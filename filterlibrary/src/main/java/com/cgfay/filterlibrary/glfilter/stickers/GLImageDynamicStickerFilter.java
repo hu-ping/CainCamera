@@ -1,6 +1,7 @@
 package com.cgfay.filterlibrary.glfilter.stickers;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.cgfay.filterlibrary.glfilter.base.GLImageGroupFilter;
 import com.cgfay.filterlibrary.glfilter.stickers.bean.DynamicSticker;
@@ -18,9 +19,14 @@ public class GLImageDynamicStickerFilter extends GLImageGroupFilter {
         if (sticker == null || sticker.dataList == null) {
             return;
         }
+
+        Log.e(TAG, "dataList = " + sticker );
+
+
         // 如果存在普通贴纸数据，则添加普通贴纸滤镜
         for (int i = 0; i < sticker.dataList.size(); i++) {
             if (sticker.dataList.get(i) instanceof DynamicStickerNormalData) {
+                Log.e(TAG,"1............................");
                 mFilters.add(new DynamicStickerNormalFilter(context, sticker));
                 break;
             }
@@ -28,6 +34,7 @@ public class GLImageDynamicStickerFilter extends GLImageGroupFilter {
         // 判断是否存在前景贴纸滤镜
         for (int i = 0; i < sticker.dataList.size(); i++) {
             if (sticker.dataList.get(i) instanceof DynamicStickerFrameData) {
+                Log.e(TAG,"2............................");
                 mFilters.add(new DynamicStickerFrameFilter(context, sticker));
                 break;
             }
@@ -36,6 +43,7 @@ public class GLImageDynamicStickerFilter extends GLImageGroupFilter {
         // 判断添加贴纸
         for (int i = 0; i < sticker.dataList.size(); i++) {
             if (sticker.dataList.get(i) instanceof StaticStickerNormalData) {
+                Log.e(TAG,"3............................");
                 mFilters.add(new StaticStickerNormalFilter(context, sticker));
                 break;
             }

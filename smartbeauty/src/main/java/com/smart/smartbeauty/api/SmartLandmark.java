@@ -1,7 +1,7 @@
 package com.smart.smartbeauty.api;
 
-import com.cgfay.landmarklibrary.LandmarkEngine;
-import com.cgfay.landmarklibrary.OneFace;
+import com.cgfay.filterlibrary.landmark.LandmarkEngine;
+import com.cgfay.filterlibrary.landmark.OneFace;
 
 /**
  * Created by deepglint on 2019/3/11.

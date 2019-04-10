@@ -10,7 +10,7 @@ import com.cgfay.filterlibrary.glfilter.resource.ResourceCodec;
 import com.cgfay.filterlibrary.glfilter.resource.ResourceIndexCodec;
 import com.cgfay.filterlibrary.glfilter.stickers.bean.DynamicStickerData;
 import com.cgfay.filterlibrary.glfilter.utils.OpenGLUtils;
-import com.cgfay.landmarklibrary.LandmarkEngine;
+import com.cgfay.filterlibrary.landmark.LandmarkEngine;
 import com.cgfay.utilslibrary.utils.BitmapUtils;
 
 import java.io.IOException;

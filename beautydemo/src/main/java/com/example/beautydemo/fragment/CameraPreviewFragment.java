@@ -13,6 +13,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 
+import android.util.Log;
 import android.util.Size;
 import android.util.TypedValue;
 
@@ -409,7 +410,7 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
     private Camera.PreviewCallback mCameraPreviewCallback = new Camera.PreviewCallback() {
         @Override
         public void onPreviewFrame(byte[] data, Camera camera) {
-            // 人脸检测
+                      // 人脸检测
             FaceTracker.getInstance().trackFace(data,
                     mCameraParam.previewWidth, mCameraParam.previewHeight);
 
@@ -417,7 +418,7 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
                 camera.addCallbackBuffer(CameraParam.getInstance().previewBuffer);
             }
 
-            // 请求刷新
+             //请求刷新
             SmartBeautyRender.getInstance().requestRender();
 
         }
@@ -640,7 +641,7 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
         @Override
             public void onTrackingFinish() {
                 // 检测完成需要请求刷新
-                SmartBeautyRender.getInstance().requestRender();
+//                SmartBeautyRender.getInstance().requestRender();
         }
     };
 

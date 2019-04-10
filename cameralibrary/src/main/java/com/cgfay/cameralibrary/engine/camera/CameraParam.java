@@ -154,7 +154,7 @@ public final class CameraParam {
         isTakePicture = false;
         enableDepthBlur = false;
         enableVignette = false;
-        beauty = new BeautyParam();
+        beauty = BeautyParam.getInstance();
     }
 
     /**

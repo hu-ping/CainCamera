@@ -34,7 +34,6 @@ dependencies {
 
     implementation project(':facedetectlibrary')
     implementation project(':filterlibrary')
-    implementation project(':landmarklibrary')
     implementation project(':utilslibrary')
     implementation project(':gdxlibrary')
     implementation 'com.android.support:appcompat-v7:27.1.1'

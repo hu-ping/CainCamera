@@ -2,7 +2,7 @@ package com.cgfay.filterlibrary.glfilter.makeup;
 
 import com.cgfay.filterlibrary.glfilter.makeup.bean.MakeupBaseData;
 import com.cgfay.filterlibrary.glfilter.utils.OpenGLUtils;
-import com.cgfay.landmarklibrary.LandmarkEngine;
+import com.cgfay.filterlibrary.landmark.LandmarkEngine;
 
 /**
  * 动态彩妆加载器，除美瞳，因为美瞳需要做裁剪处理，需要多个FBO处理
