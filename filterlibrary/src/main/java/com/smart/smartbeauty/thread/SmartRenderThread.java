@@ -240,6 +240,10 @@ public class SmartRenderThread extends HandlerThread {
      */
     void takeImage(SmartBeautyRender.ITackImageCallback callback) {
         synchronized (mSyncFence) {
+            if(null == mDisplaySurface) {
+                return;
+            }
+
             ByteBuffer buffer = mDisplaySurface.getCurrentFrame();
             callback.onCaptured(buffer,
                     mDisplaySurface.getWidth(), mDisplaySurface.getHeight());
