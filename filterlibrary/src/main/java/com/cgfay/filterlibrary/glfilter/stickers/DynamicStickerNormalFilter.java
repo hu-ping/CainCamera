@@ -3,6 +3,7 @@ package com.cgfay.filterlibrary.glfilter.stickers;
 import android.content.Context;
 import android.opengl.GLES30;
 import android.opengl.Matrix;
+import android.util.Log;
 
 import com.cgfay.filterlibrary.glfilter.stickers.bean.DynamicSticker;
 import com.cgfay.filterlibrary.glfilter.stickers.bean.DynamicStickerNormalData;
@@ -41,6 +42,9 @@ public class DynamicStickerNormalFilter extends DynamicStickerBaseFilter {
 
     // 贴纸顶点
     private float[] mStickerVertices = new float[8];
+
+    private OneFace lastFace = null;
+    private int statisticsCount = 0;
 
     public DynamicStickerNormalFilter(Context context, DynamicSticker sticker) {
         super(context, sticker, OpenGLUtils.getShaderFromAssets(context, "shader/sticker/vertex_sticker_normal.glsl"),
@@ -132,8 +136,12 @@ public class DynamicStickerNormalFilter extends DynamicStickerBaseFilter {
         if (mStickerLoaderList.size() > 0 && LandmarkEngine.getInstance().hasFace()) {
             // 逐个人脸绘制
             int faceCount = Math.min(LandmarkEngine.getInstance().getFaceSize(), mStickerLoaderList.get(0).getMaxCount());
+
+            Log.e(TAG, "faceCount = " + faceCount);
+
             for (int faceIndex = 0; faceIndex < faceCount; faceIndex++) {
                 OneFace oneFace = LandmarkEngine.getInstance().getOneFace(faceIndex);
+
                 // 如果置信度大于0.5，表示这是一个正常的人脸，绘制贴纸
                 if (oneFace.confidence > 0.5f) {
                     for (int stickerIndex = 0; stickerIndex < mStickerLoaderList.size(); stickerIndex++) {
@@ -193,11 +201,28 @@ public class DynamicStickerNormalFilter extends DynamicStickerBaseFilter {
         for (int i = 0; i < stickerData.centerIndexList.length; i++) {
             centerX += (oneFace.vertexPoints[stickerData.centerIndexList[i] * 2] * 0.5f + 0.5f) * mImageWidth;
             centerY += (oneFace.vertexPoints[stickerData.centerIndexList[i] * 2 + 1] * 0.5f + 0.5f) * mImageHeight;
+
+//            Log.e(TAG, "0.oneFace.vertexPoints[stickerData.centerIndexList[i] * 2] = "
+//                    +oneFace.vertexPoints[stickerData.centerIndexList[i] * 2]) ;
+//            Log.e(TAG, "0.mImageWidth = " + mImageWidth + ", mImageHeight = " + mImageHeight);
+//            Log.e(TAG, "0.centerX = " + centerX + ", centerY = " + centerY);
         }
+
+//        Log.e(TAG, "1.centerX = " + centerX + ", centerY = " + centerY);
+
         centerX /= (float) stickerData.centerIndexList.length;
         centerY /= (float) stickerData.centerIndexList.length;
+
+//        Log.e(TAG, "2.centerX = " + centerX + ", centerY = " + centerY);
+
         centerX = centerX / mImageHeight * ProjectionScale;
         centerY = centerY / mImageHeight * ProjectionScale;
+
+//        Log.e(TAG, "3.centerX = " + centerX + ", centerY = " + centerY);
+
+
+
+
         // 1.3、求出真正的中心点顶点坐标，这里由于frustumM设置了长宽比，因此ndc坐标计算时需要变成mRatio:1，这里需要转换一下
         float ndcCenterX = (centerX - mRatio) * ProjectionScale;
         float ndcCenterY = (centerY - 1.0f) * ProjectionScale;
@@ -231,13 +256,14 @@ public class DynamicStickerNormalFilter extends DynamicStickerBaseFilter {
 
         // 2.2、贴纸姿态角旋转
         // TODO 人脸关键点给回来的pitch角度似乎不太对？？SDK给过来的pitch角度值太小了，比如抬头低头pitch的实际角度30度了，SDK返回的结果才十几度，后续再看看如何优化
-//        float pitchAngle = -(float) (oneFace.pitch * 180f / Math.PI);
-//        float yawAngle = (float) (oneFace.yaw * 180f / Math.PI);
-//        float rollAngle = (float) (oneFace.roll * 180f / Math.PI);
-        //TODO  huping add.
-        float pitchAngle = oneFace.pitch ;
-        float yawAngle = oneFace.yaw ;
-        float rollAngle = -oneFace.roll;
+        float pitchAngle = -(float) (oneFace.pitch * 180f / Math.PI);
+        float yawAngle = (float) (oneFace.yaw * 180f / Math.PI);
+        float rollAngle = (float) (oneFace.roll * 180f / Math.PI);
+//
+//        //TODO: huping add.
+//        float pitchAngle = oneFace.pitch ;
+//        float yawAngle = oneFace.yaw ;
+//        float rollAngle = -oneFace.roll;
 
         // 限定左右扭头幅度不超过50°，销毁人脸关键点SDK带来的偏差
         if (Math.abs(yawAngle) > 50) {
@@ -254,8 +280,8 @@ public class DynamicStickerNormalFilter extends DynamicStickerBaseFilter {
         Matrix.rotateM(mModelMatrix, 0, yawAngle, 0, 1, 0);
         Matrix.rotateM(mModelMatrix, 0, pitchAngle, 1, 0, 0);
 
-        //TODO huping add.
-        Matrix.rotateM(mModelMatrix, 0, 140, 1, 0, 0);
+//        //TODO: huping add.
+//        Matrix.rotateM(mModelMatrix, 0, 140, 1, 0, 0);
 
         // 2.4、将Z轴平移回到原来构建的视椎体的位置，即需要将坐标z轴平移回到屏幕中心，此时才是贴纸的实际模型矩阵
         Matrix.translateM(mModelMatrix, 0, -ndcCenterX, -ndcCenterY, 0);

@@ -304,6 +304,7 @@ public class OpenGLUtils {
             checkGlError("glGenTexture");
             //生成纹理
             GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, texture[0]);
+
             //设置缩小过滤为使用纹理中坐标最接近的一个像素的颜色作为需要绘制的像素颜色
             GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D,
                     GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_NEAREST);
@@ -316,6 +317,8 @@ public class OpenGLUtils {
             //设置环绕方向T，截取纹理坐标到[1/2n,1-1/2n]。将导致永远不会与border融合
             GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D,
                     GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
+
+
             //根据以上指定的参数，生成一个2D纹理
             GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0);
             return texture[0];

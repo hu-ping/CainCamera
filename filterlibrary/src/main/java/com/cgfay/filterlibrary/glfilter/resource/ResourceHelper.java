@@ -51,6 +51,10 @@ public final class ResourceHelper extends ResourceBaseHelper {
         mResourceList.add(new ResourceData("horizontal_mirror", "assets://resource/horizontal_mirror.zip", ResourceType.FILTER, "horizontal_mirror", "assets://thumbs/resource/horizontal_mirror.png"));
         mResourceList.add(new ResourceData("vertical_mirror", "assets://resource/vertical_mirror.zip", ResourceType.FILTER, "vertical_mirror", "assets://thumbs/resource/vertical_mirror.png"));
 
+        mResourceList.add(new ResourceData("market", "assets://resource/market.zip",
+                ResourceType.STICKER, "market", "assets://thumbs/resource/market.png"));
+
+
         // 解压所有资源
         decompressResource(context, mResourceList);
     }

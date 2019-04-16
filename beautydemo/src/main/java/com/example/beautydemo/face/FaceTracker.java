@@ -431,9 +431,9 @@ public final class FaceTracker {
             // 设置是否需要翻转
             SmartLandmark.getInstance().setNeedFlip(faceTrackParam.previewTrack && faceTrackParam.isBackCamera);
 
-            Log.e(TAG, "cameraRotation == " + cameraRotation
-                    + ", previewTrack = " + faceTrackParam.previewTrack
-                    + ", isBackCamera = " + faceTrackParam.isBackCamera);
+//            Log.e(TAG, "cameraRotation == " + cameraRotation
+//                    + ", previewTrack = " + faceTrackParam.previewTrack
+//                    + ", isBackCamera = " + faceTrackParam.isBackCamera);
 
             // 计算人脸关键点
             if (faceInfos != null && faceInfos.length > 0) {

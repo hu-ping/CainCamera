@@ -77,7 +77,7 @@ public class PreviewResourceFragment extends Fragment {
             mResourceLayout = (LinearLayout) mInflater.inflate(R.layout.view_preview_resource, null);
         }
         mResourceView = (RecyclerView) mResourceLayout.findViewById(R.id.preview_resource_list);
-        GridLayoutManager manager = new GridLayoutManager(mActivity, 5);
+        GridLayoutManager manager = new GridLayoutManager(mActivity, 6);
         mResourceView.setLayoutManager(manager);
         PreviewResourceAdapter adapter = new PreviewResourceAdapter(mActivity, ResourceHelper.getResourceList());
         mResourceView.setAdapter(adapter);

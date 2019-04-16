@@ -126,7 +126,7 @@ public final class CameraParam {
         highDefinition = false;
         orientation = 0;
         backCamera = false;
-        cameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
+        cameraId = Camera.CameraInfo.CAMERA_FACING_FRONT;
         supportFlash = false;
         focusWeight = 1000;
         recordable = true;
