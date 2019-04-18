@@ -303,10 +303,13 @@ public final class SmartRenderManager {
                 currentTexture = mFilterArrays.get(SmartRenderIndex.FilterIndex).drawFrameBuffer(currentTexture, mVertexBuffer, mTextureBuffer);
             }
 
+            long lastTime = System.currentTimeMillis();
             // 资源滤镜，可以是贴纸、滤镜甚至是彩妆类型
             if (mFilterArrays.get(SmartRenderIndex.ResourceIndex) != null) {
                 currentTexture = mFilterArrays.get(SmartRenderIndex.ResourceIndex).drawFrameBuffer(currentTexture, mVertexBuffer, mTextureBuffer);
             }
+            long now = System.currentTimeMillis();
+            Log.e(TAG, "consume = " + (now - lastTime));
 
             // 景深
             if (mFilterArrays.get(SmartRenderIndex.DepthBlurIndex) != null) {

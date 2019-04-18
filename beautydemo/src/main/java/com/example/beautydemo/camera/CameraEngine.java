@@ -78,6 +78,7 @@ public class CameraEngine {
         cameraParam.supportFlash = checkSupportFlashLight(parameters);
         cameraParam.previewFps = chooseFixedPreviewFps(parameters, expectFps * 1000);
         parameters.setRecordingHint(true);
+
         mCamera.setParameters(parameters);
         setPreviewSize(mCamera, expectWidth, expectHeight);
         setPictureSize(mCamera, expectWidth, expectHeight);

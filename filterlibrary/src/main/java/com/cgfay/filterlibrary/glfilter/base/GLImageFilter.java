@@ -182,6 +182,10 @@ public class GLImageFilter {
 
         // 绑定FBO
         GLES30.glViewport(0, 0, mFrameWidth, mFrameHeight);
+
+//        GLES30.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+//        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
+
         GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, mFrameBuffers[0]);
         // 使用当前的program
         GLES30.glUseProgram(mProgramHandle);

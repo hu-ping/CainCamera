@@ -256,14 +256,14 @@ public class DynamicStickerNormalFilter extends DynamicStickerBaseFilter {
 
         // 2.2、贴纸姿态角旋转
         // TODO 人脸关键点给回来的pitch角度似乎不太对？？SDK给过来的pitch角度值太小了，比如抬头低头pitch的实际角度30度了，SDK返回的结果才十几度，后续再看看如何优化
-        float pitchAngle = -(float) (oneFace.pitch * 180f / Math.PI);
-        float yawAngle = (float) (oneFace.yaw * 180f / Math.PI);
-        float rollAngle = (float) (oneFace.roll * 180f / Math.PI);
-//
-//        //TODO: huping add.
-//        float pitchAngle = oneFace.pitch ;
-//        float yawAngle = oneFace.yaw ;
-//        float rollAngle = -oneFace.roll;
+//        float pitchAngle = -(float) (oneFace.pitch * 180f / Math.PI);
+//        float yawAngle = (float) (oneFace.yaw * 180f / Math.PI);
+//        float rollAngle = (float) (oneFace.roll * 180f / Math.PI);
+
+        //TODO: huping add.
+        float pitchAngle = oneFace.pitch ;
+        float yawAngle = oneFace.yaw ;
+        float rollAngle = -oneFace.roll;
 
         // 限定左右扭头幅度不超过50°，销毁人脸关键点SDK带来的偏差
         if (Math.abs(yawAngle) > 50) {
@@ -280,8 +280,8 @@ public class DynamicStickerNormalFilter extends DynamicStickerBaseFilter {
         Matrix.rotateM(mModelMatrix, 0, yawAngle, 0, 1, 0);
         Matrix.rotateM(mModelMatrix, 0, pitchAngle, 1, 0, 0);
 
-//        //TODO: huping add.
-//        Matrix.rotateM(mModelMatrix, 0, 140, 1, 0, 0);
+        //TODO: huping add.
+        Matrix.rotateM(mModelMatrix, 0, 160, 1, 0, 0);
 
         // 2.4、将Z轴平移回到原来构建的视椎体的位置，即需要将坐标z轴平移回到屏幕中心，此时才是贴纸的实际模型矩阵
         Matrix.translateM(mModelMatrix, 0, -ndcCenterX, -ndcCenterY, 0);
