@@ -219,6 +219,17 @@ public class SmartBeautyRender{
         }
     }
 
+
+    public void switchDrawSticker(boolean draw){
+        if (mRenderHandler == null) {
+            return;
+        }
+        synchronized (mSynOperation) {
+            mRenderHandler.sendMessage(mRenderHandler
+                    .obtainMessage(SmartRenderHandler.MSG_DRAW_STICKER, draw));
+        }
+    }
+
     // 执行拍照
     public void takeImage(ITackImageCallback callback){
         if (mRenderHandler == null) {
@@ -233,6 +244,7 @@ public class SmartBeautyRender{
     public interface ITackImageCallback{
         void onCaptured(ByteBuffer buffer, int width, int height);
     }
+
 
 
     /**

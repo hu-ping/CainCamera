@@ -37,14 +37,65 @@ public class SmartBeautyResource {
     private static  List<ResourceData> mMakeupList = new ArrayList<>();
 
     public static void initResources(Context context) {
-        ResourceHelper.initAssetsResource(context);
+        //TODO: huping modify.
+//        ResourceHelper.initAssetsResource(context);
+        ResourceHelper.initResource(context);
+
+
         FilterHelper.initAssetsFilter(context);
         MakeupHelper.initAssetsMakeup(context);
 
-        mResourceList = ResourceHelper.getResourceList();
+        //TODO: huping modify.
+//        mResourceList = ResourceHelper.getResourceList();
+
         mFilterList = FilterHelper.getFilterList();
         mMakeupList = MakeupHelper.getMakeupList();
+
+
     }
+
+    public static SmartResourceData getResourceData(Context context, String name, String zipPath, SmartResourceType type, String unzipFolder, String thumbPath) {
+        ResourceType resourceType = ResourceType.NONE;
+        switch (type) {
+            case NONE:
+                resourceType= ResourceType.NONE;
+                break;
+            case STICKER:
+                resourceType= ResourceType.STICKER;
+                break;
+            case FILTER:
+                resourceType= ResourceType.FILTER;
+                break;
+            case EFFECT:
+                resourceType= ResourceType.EFFECT;
+                break;
+            case MAKEUP:
+                resourceType= ResourceType.MAKEUP;
+                break;
+            case MULTI:
+                resourceType= ResourceType.MULTI;
+                break;
+        }
+
+        ResourceData data = ResourceHelper.getResourceData(context, name, zipPath, resourceType, unzipFolder, thumbPath);
+
+        return toSmartResourceData(data);
+
+    }
+
+
+    public static Bitmap getResourceImageBitmap(Context context,SmartResourceData data) {
+        ResourceData resource = toResourceData(data);
+
+        // 如果是asset下面的，则直接解码
+        if (!TextUtils.isEmpty(resource.thumbPath) && resource.thumbPath.startsWith("assets://")) {
+            return BitmapUtils.getImageFromAssetsFile(context,
+                    resource.thumbPath.substring("assets://".length()));
+        }
+
+        return null;
+    }
+
 
     public static Bitmap getResourceImageBitmap(Context context, int position) {
         ResourceData resource = mResourceList.get(position);

@@ -52,6 +52,8 @@ public class SmartRenderHandler extends Handler {
 
     public static final int MSG_SET_TEXTURE_SIZE = 0x18;
 
+    public static final int MSG_DRAW_STICKER = 0x19;
+
 
     private WeakReference<SmartRenderThread> mWeakRenderThread;
 
@@ -154,6 +156,11 @@ public class SmartRenderHandler extends Handler {
                     thread.changeDynamicResource((DynamicSticker) msg.obj);
                 }
                 break;
+
+            case MSG_DRAW_STICKER:
+                thread.switchDrawSticker((boolean)msg.obj);
+                break;
+
             default:
                 throw new IllegalStateException("Can not handle message what is: " + msg.what);
         }

@@ -34,6 +34,43 @@ public final class ResourceHelper extends ResourceBaseHelper {
         return mResourceList;
     }
 
+    public static void initResource(Context context) {
+        FileUtils.createNoMediaFile(getResourceDirectory(context));
+    }
+
+    public static ResourceData getResourceData(Context context, String name, String zipPath, ResourceType type, String unzipFolder, String thumbPath) {
+        ResourceData data = new ResourceData(name, zipPath, type, unzipFolder, thumbPath);
+        decompressOneResource(context, data);
+        return data;
+    }
+
+
+    /**
+     * 解压所有资源
+     * @param context
+     * @param item 资源列表
+     */
+    public static void decompressOneResource(Context context, ResourceData item) {
+        // 检查路径是否存在
+        boolean result = checkResourceDirectory(context);
+        // 存放资源路径无法创建，则直接返回
+        if (!result) {
+            return;
+        }
+        String resourcePath = getResourceDirectory(context);
+        // 解码列表中的所有资源
+
+        if (item.type.getIndex() >= 0) {
+            if (item.zipPath.startsWith("assets://")) {
+                decompressAsset(context, item.zipPath.substring("assets://".length()), item.unzipFolder, resourcePath);
+            } else if (item.zipPath.startsWith("file://")) {    // 绝对目录中的资源
+                decompressFile(item.zipPath.substring("file://".length()), item.unzipFolder, resourcePath);
+            }
+        }
+
+    }
+
+
     /**
      * 初始化Assets目录下的资源
      * @param context

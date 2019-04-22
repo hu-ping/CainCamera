@@ -12,6 +12,7 @@ import android.view.SurfaceHolder;
 
 import com.cgfay.filterlibrary.gles.EglCore;
 import com.cgfay.filterlibrary.gles.WindowSurface;
+import com.cgfay.filterlibrary.glfilter.beauty.bean.BeautyParam;
 import com.cgfay.filterlibrary.glfilter.color.bean.DynamicColor;
 import com.cgfay.filterlibrary.glfilter.makeup.bean.DynamicMakeup;
 import com.cgfay.filterlibrary.glfilter.stickers.StaticStickerNormalFilter;
@@ -233,6 +234,12 @@ public class SmartRenderThread extends HandlerThread {
         }
     }
 
+
+    void switchDrawSticker(boolean draw) {
+        synchronized (mSynOperation) {
+            BeautyParam.getInstance().drawSticker = draw;
+        }
+    }
 
 
     /**

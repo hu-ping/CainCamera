@@ -53,6 +53,8 @@ public class BeautyParam {
     // 是否显示人脸关键点
     public boolean drawFacePoints;
 
+    public boolean drawSticker;
+
     private static final BeautyParam mInstance = new BeautyParam();
 
     /**
@@ -98,5 +100,6 @@ public class BeautyParam {
         enableDepthBlur = false;
         enableVignette = false;
         drawFacePoints = false;
+        drawSticker = true;
     }
 }

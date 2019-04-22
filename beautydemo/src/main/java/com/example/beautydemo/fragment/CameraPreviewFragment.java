@@ -407,6 +407,9 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
         prepareTracker();
     }
 
+    int index = 0;
+    boolean draw = true;
+
     private Camera.PreviewCallback mCameraPreviewCallback = new Camera.PreviewCallback() {
         @Override
         public void onPreviewFrame(byte[] data, Camera camera) {
@@ -417,6 +420,13 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
             if (CameraParam.getInstance().previewBuffer  != null) {
                 camera.addCallbackBuffer(CameraParam.getInstance().previewBuffer);
             }
+
+//            index ++;
+//            if(index > 200) {
+//                draw = !draw;
+//                SmartBeautyRender.getInstance().switchDrawSticker(draw);
+//                index = 0;
+//            }
 
              //请求刷新
             SmartBeautyRender.getInstance().requestRender();

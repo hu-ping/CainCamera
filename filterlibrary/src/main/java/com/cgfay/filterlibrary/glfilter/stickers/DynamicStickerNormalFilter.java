@@ -109,6 +109,7 @@ public class DynamicStickerNormalFilter extends DynamicStickerBaseFilter {
     public void onInputSizeChanged(int width, int height) {
         super.onInputSizeChanged(width, height);
         mRatio = (float) width / height;
+        //这里的参数near和far表示的是到视点的距离，不是到坐标原点的距离。
         Matrix.frustumM(mProjectionMatrix, 0, -mRatio, mRatio, -1.0f, 1.0f, 3.0f, 9.0f);
         Matrix.setLookAtM(mViewMatrix, 0, 0, 0, 6.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
     }
@@ -249,7 +250,7 @@ public class DynamicStickerNormalFilter extends DynamicStickerBaseFilter {
         mVertexBuffer.put(mStickerVertices);
 
         // 步骤二、根据人脸姿态角计算透视变换的总变换矩阵
-        // 2.1、将Z轴平移到贴纸中心点，因为贴纸模型矩阵需要做姿态角变换
+        // 2.1、将Z轴（注意这里是z轴而不是z方向）平移到贴纸中心点，因为贴纸模型矩阵需要做姿态角变换
         // 平移主要是防止贴纸变形
         Matrix.setIdentityM(mModelMatrix, 0);
         Matrix.translateM(mModelMatrix, 0, ndcCenterX, ndcCenterY, 0);

@@ -305,7 +305,7 @@ public final class SmartRenderManager {
 
             long lastTime = System.currentTimeMillis();
             // 资源滤镜，可以是贴纸、滤镜甚至是彩妆类型
-            if (mFilterArrays.get(SmartRenderIndex.ResourceIndex) != null) {
+            if (mFilterArrays.get(SmartRenderIndex.ResourceIndex) != null && mBeautyParam.drawSticker) {
                 currentTexture = mFilterArrays.get(SmartRenderIndex.ResourceIndex).drawFrameBuffer(currentTexture, mVertexBuffer, mTextureBuffer);
             }
             long now = System.currentTimeMillis();

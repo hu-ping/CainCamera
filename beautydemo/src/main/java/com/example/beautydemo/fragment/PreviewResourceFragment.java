@@ -49,6 +49,7 @@ public class PreviewResourceFragment extends Fragment {
         super.onAttach(context);
         mActivity = getActivity();
         mInflater = LayoutInflater.from(mActivity);
+
     }
 
     @Nullable
@@ -106,5 +107,7 @@ public class PreviewResourceFragment extends Fragment {
 
         SmartBeautyResource.changeDynamicResource(mActivity, data);
     }
+
+
 
 }
