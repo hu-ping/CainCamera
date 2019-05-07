@@ -19,6 +19,7 @@ import com.cgfay.filterlibrary.glfilter.stickers.StaticStickerNormalFilter;
 import com.cgfay.filterlibrary.glfilter.stickers.bean.DynamicSticker;
 import com.cgfay.filterlibrary.glfilter.utils.OpenGLUtils;
 import com.smart.smartbeauty.api.SmartBeautyRender;
+import com.smart.smartbeauty.api.SmartRenderParam;
 import com.smart.smartbeauty.filter.SmartRenderManager;
 
 import java.nio.ByteBuffer;
@@ -125,8 +126,8 @@ public class SmartRenderThread extends HandlerThread {
 
 
         if(mListener != null) {
-            Size size =  mListener.onSurfaceCreated(mSurfaceTexture);
-            mRenderManager.setTextureSize(size.getWidth(), size.getHeight());
+            SmartRenderParam param =  mListener.onSurfaceCreated(mSurfaceTexture);
+            mRenderManager.setTextureSize(param.camareWidth, param.cameraHeight, param.orientation);
         }
     }
 
@@ -347,7 +348,7 @@ public class SmartRenderThread extends HandlerThread {
 
 
     public interface ISmartRenderThreadListener {
-        Size onSurfaceCreated(SurfaceTexture surfaceTexture);
+        SmartRenderParam onSurfaceCreated(SurfaceTexture surfaceTexture);
         void onSurfaceFinish();
         void onSurfaceDestroyed();
     }

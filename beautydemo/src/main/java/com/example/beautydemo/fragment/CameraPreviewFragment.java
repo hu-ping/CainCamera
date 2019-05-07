@@ -28,8 +28,11 @@ import android.widget.TextView;
 import com.example.beautydemo.R;
 import com.example.beautydemo.camera.CameraEngine;
 import com.example.beautydemo.camera.CameraParam;
-import com.example.beautydemo.face.FaceTracker;
+import com.example.beautydemo.face.IFaceFactory;
+import com.example.beautydemo.face.IFaceTracker;
+import com.example.beautydemo.face.DeepglintFaceFactory;
 import com.example.beautydemo.face.FaceTrackerCallback;
+import com.example.beautydemo.face.KSFaceFactory;
 import com.example.beautydemo.util.PathConstraints;
 import com.example.beautydemo.util.PermissionConfirmDialogFragment;
 import com.example.beautydemo.util.PermissionErrorDialogFragment;
@@ -40,7 +43,12 @@ import com.example.beautydemo.widget.HorizontalIndicatorView;
 import com.example.beautydemo.widget.ShutterButton;
 import com.smart.smartbeauty.api.SmartBeautyRender;
 import com.smart.smartbeauty.api.SmartBeautyResource;
+import com.smart.smartbeauty.api.SmartRenderParam;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 
@@ -113,6 +121,9 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
     private SurfaceTexture mCameraSurfaceTexture = null;
 
     private String mActivationCode = "xx-xx-xx" ;
+
+    private IFaceFactory mFaceFactory = null;
+    private IFaceTracker mFaceTracker = null;
 
     public CameraPreviewFragment() {
         mCameraParam = CameraParam.getInstance();
@@ -364,7 +375,7 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
 
     private SmartBeautyRender.ISmartRenderListener mRenderListener = new SmartBeautyRender.ISmartRenderListener() {
         @Override
-        public Size onRenderCreated(SurfaceTexture cameraSurfaceTexture) {
+        public SmartRenderParam onRenderCreated(SurfaceTexture cameraSurfaceTexture) {
             mCameraSurfaceTexture = cameraSurfaceTexture;
             openCamera();
 
@@ -377,7 +388,10 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
                 textureWidth = mCameraParam.previewWidth;
                 textureHeight = mCameraParam.previewHeight;
             }
-            return new Size(textureWidth, textureHeight);
+
+            Log.e(TAG, "mCameraParam.orientation == " + mCameraParam.orientation);
+
+            return new SmartRenderParam(textureWidth, textureHeight, mCameraParam.orientation);
         }
 
         @Override
@@ -410,11 +424,19 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
     int index = 0;
     boolean draw = true;
 
+    static boolean enableSaveBitmap = true;
+    static int captureFrameCount = 0;
+    static double nextCaptureStatisticsTime = -1;
+    static double UNIT_TIME_INTERVAL = 1000;
+    static int capturePreprocessingFrameCount = 0;
+    static double nextCapturePreprocessingStatisticsTime = -1;
+    private FileOutputStream fos = null;
+
     private Camera.PreviewCallback mCameraPreviewCallback = new Camera.PreviewCallback() {
         @Override
         public void onPreviewFrame(byte[] data, Camera camera) {
                       // 人脸检测
-            FaceTracker.getInstance().trackFace(data,
+            mFaceTracker.trackFace(data,
                     mCameraParam.previewWidth, mCameraParam.previewHeight);
 
             if (CameraParam.getInstance().previewBuffer  != null) {
@@ -431,6 +453,44 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
              //请求刷新
             SmartBeautyRender.getInstance().requestRender();
 
+
+
+
+            if(enableSaveBitmap) {
+                String filePath = PathConstraints.getYUVCachePath(mActivity);
+                File yuvFile = new File(filePath);
+
+                try {
+                    fos = new FileOutputStream(yuvFile);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+
+                try {
+                    fos.write(data);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                enableSaveBitmap = false;
+            }
+
+            captureFrameCount++;
+            long currentTime = System.currentTimeMillis();
+            if(nextCaptureStatisticsTime == -1) {
+                nextCaptureStatisticsTime = currentTime + UNIT_TIME_INTERVAL;
+            }
+            if(currentTime > nextCaptureStatisticsTime) {
+                Log.e(TAG,  "statistics onPreviewFrame frame count:" + captureFrameCount);
+                nextCaptureStatisticsTime = currentTime + UNIT_TIME_INTERVAL;
+                captureFrameCount = 0;
+            }
         }
     };
 
@@ -542,6 +602,7 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
                 100, mActivity.getResources().getDisplayMetrics());
         mBtnShutter.setLayoutParams(layoutParams);
         mBtnEffect.setVisibility(View.VISIBLE);
+
         mBtnStickers.setVisibility(View.VISIBLE);
     }
 
@@ -558,6 +619,7 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
                         public void run() {
                             String filePath = PathConstraints.getImageCachePath(mActivity);
                             SmartBeautyResource.saveBitmap(filePath, buffer, width, height);
+                            Log.e(TAG, "filePath == " + filePath);
 
                         }
                     });
@@ -621,26 +683,29 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
      * 初始化人脸检测器
      */
     private void initTracker() {
-        FaceTracker.getInstance().setFaceCallback(mFaceTrackerCallback);
+        mFaceFactory = new DeepglintFaceFactory();
+        mFaceTracker = mFaceFactory.createFaceTracker();
 
-        FaceTracker.getInstance().initTracker();
+        mFaceTracker.setFaceCallback(mFaceTrackerCallback);
+        mFaceTracker.initTracker(mActivity);
     }
 
     /**
      * 销毁人脸检测器
      */
     private void releaseFaceTracker() {
-        FaceTracker.getInstance().destroyTracker();
+        mFaceTracker.destroyTracker();
     }
 
     /**
      * 准备人脸检测器
      */
     private void prepareTracker() {
-        FaceTracker.getInstance()
-                .setBackCamera(mCameraParam.backCamera);
 
-        FaceTracker.getInstance().prepareFaceTracker(mActivity, mActivationCode, mCameraParam.orientation,
+        Log.e(TAG, "mCameraParam.orientation == " + mCameraParam.orientation );
+        mFaceTracker.setBackCamera(mCameraParam.backCamera);
+
+        mFaceTracker.prepareFaceTracker(mActivity, mActivationCode, mCameraParam.orientation,
                         mCameraParam.previewWidth, mCameraParam.previewHeight);
     }
 

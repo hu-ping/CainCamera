@@ -1,11 +1,41 @@
 package com.example.beautydemo.face;
 
 
+import com.megvii.facepp.sdk.Facepp;
 
 /**
  * 人脸检测参数
  */
 public final class FaceTrackParam {
+    public enum TrackerSDKModule {
+        DEEPGLINT("deepglint", 0),
+        FACEPLUSPLUS("faceplusplus", 1),
+        SENSETIME("SenseTime", 2);
+
+        private String name;
+        private int index;
+
+        TrackerSDKModule(String name, int index) {
+            this.name = name;
+            this.index = index;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public int getIndex() {
+            return index;
+        }
+
+        public void setIndex(int index) {
+            this.index = index;
+        }
+    }
 
     // 是否允许检测
     boolean canFaceTrack = false;
@@ -33,7 +63,9 @@ public final class FaceTrackParam {
     public int detectInterval;
 
     // 检测模式
-//    public int trackMode;
+    public int trackMode;
+
+    public TrackerSDKModule trackerSDKModule;
 
     // 检测回调
     public FaceTrackerCallback trackerCallback;
@@ -65,7 +97,9 @@ public final class FaceTrackParam {
         minFaceSize = 200;
         detectInterval = 25;
 
-//        trackMode = Facepp.FaceppConfig.DETECTION_MODE_TRACKING_SMOOTH;
+        trackMode = Facepp.FaceppConfig.DETECTION_MODE_TRACKING_SMOOTH;
+
+        trackerSDKModule = TrackerSDKModule.DEEPGLINT;
 
         trackerCallback = null;
     }

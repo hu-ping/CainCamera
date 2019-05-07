@@ -1,6 +1,7 @@
 package com.cgfay.filterlibrary.glfilter.stickers;
 
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
@@ -137,6 +138,7 @@ public class DynamicStickerLoader {
             String path = String.format(mStickerData.stickerName + "_%03d.png", new Object[]{frameIndex});
             bitmap = BitmapUtils.getBitmapFromFile(mFolderPath + "/" + path);
         }
+
         if (null != bitmap) {
             // 如果此时暂存的纹理ID存在，则复用该ID
             if (mStickerTexture == OpenGLUtils.GL_NOT_TEXTURE

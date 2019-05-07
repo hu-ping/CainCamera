@@ -138,7 +138,7 @@ public class DynamicStickerNormalFilter extends DynamicStickerBaseFilter {
             // 逐个人脸绘制
             int faceCount = Math.min(LandmarkEngine.getInstance().getFaceSize(), mStickerLoaderList.get(0).getMaxCount());
 
-            Log.e(TAG, "faceCount = " + faceCount);
+//            Log.e(TAG, "faceCount = " + faceCount);
 
             for (int faceIndex = 0; faceIndex < faceCount; faceIndex++) {
                 OneFace oneFace = LandmarkEngine.getInstance().getOneFace(faceIndex);
@@ -203,10 +203,10 @@ public class DynamicStickerNormalFilter extends DynamicStickerBaseFilter {
             centerX += (oneFace.vertexPoints[stickerData.centerIndexList[i] * 2] * 0.5f + 0.5f) * mImageWidth;
             centerY += (oneFace.vertexPoints[stickerData.centerIndexList[i] * 2 + 1] * 0.5f + 0.5f) * mImageHeight;
 
-//            Log.e(TAG, "0.oneFace.vertexPoints[stickerData.centerIndexList[i] * 2] = "
-//                    +oneFace.vertexPoints[stickerData.centerIndexList[i] * 2]) ;
-//            Log.e(TAG, "0.mImageWidth = " + mImageWidth + ", mImageHeight = " + mImageHeight);
-//            Log.e(TAG, "0.centerX = " + centerX + ", centerY = " + centerY);
+            Log.e(TAG, "0.oneFace.vertexPoints[stickerData.centerIndexList[i] * 2] = "
+                    +oneFace.vertexPoints[stickerData.centerIndexList[i] * 2]) ;
+            Log.e(TAG, "0.mImageWidth = " + mImageWidth + ", mImageHeight = " + mImageHeight);
+            Log.e(TAG, "0.centerX = " + centerX + ", centerY = " + centerY);
         }
 
 //        Log.e(TAG, "1.centerX = " + centerX + ", centerY = " + centerY);
@@ -245,6 +245,9 @@ public class DynamicStickerNormalFilter extends DynamicStickerBaseFilter {
         mStickerVertices[2] = anchorX + ndcStickerWidth; mStickerVertices[3] = anchorY - ndcStickerHeight;
         mStickerVertices[4] = anchorX - ndcStickerWidth; mStickerVertices[5] = anchorY + ndcStickerHeight;
         mStickerVertices[6] = anchorX + ndcStickerWidth; mStickerVertices[7] = anchorY + ndcStickerHeight;
+
+
+
         mVertexBuffer.clear();
         mVertexBuffer.position(0);
         mVertexBuffer.put(mStickerVertices);
@@ -264,9 +267,10 @@ public class DynamicStickerNormalFilter extends DynamicStickerBaseFilter {
         //TODO: huping add.
         float pitchAngle = oneFace.pitch ;
         float yawAngle = oneFace.yaw ;
-        float rollAngle = -oneFace.roll;
+        float rollAngle = oneFace.roll;
 
-        // 限定左右扭头幅度不超过50°，销毁人脸关键点SDK带来的偏差
+
+        // 限定左右扭头幅度不超过50°，销毁人脸关键点SdsDK带来的偏差
         if (Math.abs(yawAngle) > 50) {
             yawAngle = (yawAngle / Math.abs(yawAngle)) * 50;
         }
@@ -281,11 +285,20 @@ public class DynamicStickerNormalFilter extends DynamicStickerBaseFilter {
         Matrix.rotateM(mModelMatrix, 0, yawAngle, 0, 1, 0);
         Matrix.rotateM(mModelMatrix, 0, pitchAngle, 1, 0, 0);
 
+
         //TODO: huping add.
-        Matrix.rotateM(mModelMatrix, 0, 160, 1, 0, 0);
+//        Matrix.rotateM(mModelMatrix, 0, 160, 1, 0, 0);
+//        Matrix.rotateM(mModelMatrix, 0, 180, 0, 1, 0);
+//        Matrix.rotateM(mModelMatrix, 0, 180, 0, 0, 1);
+
+
 
         // 2.4、将Z轴平移回到原来构建的视椎体的位置，即需要将坐标z轴平移回到屏幕中心，此时才是贴纸的实际模型矩阵
         Matrix.translateM(mModelMatrix, 0, -ndcCenterX, -ndcCenterY, 0);
+
+
+
+
 
         // 2.5、计算总变换矩阵。MVPMatrix 的矩阵计算是 MVPMatrix = ProjectionMatrix * ViewMatrix * ModelMatrix
         // 备注：矩阵相乘的顺序不同得到的结果是不一样的，不同的顺序会导致前面计算过程不一致，这点希望大家要注意

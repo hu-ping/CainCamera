@@ -54,7 +54,7 @@ public class CameraActivity extends AppCompatActivity implements OnPageOperation
 //        new Thread(new Runnable() {
 //            @Override
 //            public void run() {
-//                FaceTracker.requestFaceNetwork(CameraActivity.this);
+//                DeepglintFaceTracker.requestFaceNetwork(CameraActivity.this);
 //            }
 //        }).start();
     }

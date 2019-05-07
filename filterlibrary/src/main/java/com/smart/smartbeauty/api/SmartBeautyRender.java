@@ -63,7 +63,7 @@ public class SmartBeautyRender{
         if (mPreviewRenderThread != null) {
             mPreviewRenderThread.setListener(new SmartRenderThread.ISmartRenderThreadListener() {
                 @Override
-                public Size onSurfaceCreated(SurfaceTexture surfaceTexture) {
+                public SmartRenderParam onSurfaceCreated(SurfaceTexture surfaceTexture) {
                     if (mListener != null) {
                        return mListener.onRenderCreated(surfaceTexture);
                     }
@@ -305,7 +305,7 @@ public class SmartBeautyRender{
 
 
     public interface ISmartRenderListener {
-        Size onRenderCreated(SurfaceTexture cameraSurfaceTexture);
+        SmartRenderParam onRenderCreated(SurfaceTexture cameraSurfaceTexture);
         void onRenderFinish();
         void onRenderDestroyed();
     }

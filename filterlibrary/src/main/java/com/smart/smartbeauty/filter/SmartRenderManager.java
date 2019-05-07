@@ -61,15 +61,25 @@ public final class SmartRenderManager {
     private FloatBuffer mDisplayVertexBuffer;
     private FloatBuffer mDisplayTextureBuffer;
 
+
+    // 用于显示裁剪的纹理顶点缓冲
+    private FloatBuffer mScaleVertexBuffer;
+    private FloatBuffer mScaleTextureBuffer;
+
     // 视图宽高
     private int mViewWidth, mViewHeight;
     // 输入图像大小
     private int mTextureWidth, mTextureHeight;
 
+    private int mOrientation;
+
     // 相机参数
     private BeautyParam mBeautyParam;
     // 上下文
     private Context mContext;
+
+    private float mXScale = 1;
+    private float mYScale = 1;
 
     /**
      * 初始化
@@ -121,6 +131,16 @@ public final class SmartRenderManager {
             mDisplayTextureBuffer.clear();
             mDisplayTextureBuffer = null;
         }
+
+
+        if (mScaleVertexBuffer != null) {
+            mScaleVertexBuffer.clear();
+            mScaleVertexBuffer = null;
+        }
+        if (mScaleTextureBuffer != null) {
+            mScaleTextureBuffer.clear();
+            mScaleTextureBuffer = null;
+        }
     }
 
     /**
@@ -132,6 +152,10 @@ public final class SmartRenderManager {
         mDisplayTextureBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.TextureVertices);
         mVertexBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.CubeVertices);
         mTextureBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.TextureVertices);
+
+
+        mScaleVertexBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.CubeVertices);
+        mScaleTextureBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.TextureVertices);
     }
 
     /**
@@ -309,7 +333,7 @@ public final class SmartRenderManager {
                 currentTexture = mFilterArrays.get(SmartRenderIndex.ResourceIndex).drawFrameBuffer(currentTexture, mVertexBuffer, mTextureBuffer);
             }
             long now = System.currentTimeMillis();
-            Log.e(TAG, "consume = " + (now - lastTime));
+//            Log.e(TAG, "consume = " + (now - lastTime));
 
             // 景深
             if (mFilterArrays.get(SmartRenderIndex.DepthBlurIndex) != null) {
@@ -324,8 +348,13 @@ public final class SmartRenderManager {
             }
         }
 
+//        // 显示输出，需要调整视口大小
+//        mFilterArrays.get(SmartRenderIndex.DisplayIndex).drawFrame(currentTexture, mDisplayVertexBuffer, mDisplayTextureBuffer);
+
+
+        //TODO: huping add.
         // 显示输出，需要调整视口大小
-        mFilterArrays.get(SmartRenderIndex.DisplayIndex).drawFrame(currentTexture, mDisplayVertexBuffer, mDisplayTextureBuffer);
+        mFilterArrays.get(SmartRenderIndex.DisplayIndex).drawFrame(currentTexture, mScaleVertexBuffer, mScaleTextureBuffer);
 
         return currentTexture;
     }
@@ -335,7 +364,7 @@ public final class SmartRenderManager {
      * @param mCurrentTexture
      */
     public void drawFacePoint(int mCurrentTexture) {
-        mBeautyParam.drawFacePoints = false;
+        mBeautyParam.drawFacePoints = true;
         if (mFilterArrays.get(SmartRenderIndex.FacePointIndex) != null) {
             if (mBeautyParam.drawFacePoints && LandmarkEngine.getInstance().hasFace()) {
                 mFilterArrays.get(SmartRenderIndex.FacePointIndex).drawFrame(mCurrentTexture, mDisplayVertexBuffer, mDisplayTextureBuffer);
@@ -348,9 +377,11 @@ public final class SmartRenderManager {
      * @param width
      * @param height
      */
-    public void setTextureSize(int width, int height) {
+    public void setTextureSize(int width, int height, int orientation) {
         mTextureWidth = width;
         mTextureHeight = height;
+        mOrientation = orientation;
+
     }
 
     /**
@@ -361,6 +392,14 @@ public final class SmartRenderManager {
     public void setDisplaySize(int width, int height) {
         mViewWidth = width;
         mViewHeight = height;
+
+        //TODO: huping add.
+        if(mOrientation == 0 && mTextureWidth > mTextureHeight) {
+            mXScale = mViewWidth * mTextureHeight/mViewHeight;
+            mXScale = (mTextureWidth - mXScale)/2/mTextureWidth;
+        }
+
+
         adjustCoordinateSize();
         onFilterChanged();
     }
@@ -387,11 +426,28 @@ public final class SmartRenderManager {
     private void adjustCoordinateSize() {
         Log.e(TAG, "mViewWidth == " + mViewWidth + ", mViewHeight == "  + mViewHeight);
         Log.e(TAG, "mTextureWidth == " + mTextureWidth + ", mTextureHeight == "  + mTextureHeight);
+        Log.e(TAG, "mX == " + mXScale);
+
 
         float[] textureCoord = null;
         float[] vertexCoord = null;
         float[] textureVertices = TextureRotationUtils.TextureVertices;
         float[] vertexVertices = TextureRotationUtils.CubeVertices;
+
+
+//        //TODO: huping add.
+//        textureCoord = new float[] {
+//                textureVertices[0] + mXScale, textureVertices[1],
+//                textureVertices[2] - mXScale, textureVertices[3],
+//                textureVertices[4] + mXScale, textureVertices[5],
+//                textureVertices[6] - mXScale, textureVertices[7],
+//        };
+//
+
+
+
+
+
 //        float ratioMax = Math.max((float) mViewWidth / mTextureWidth,
 //                (float) mViewHeight / mTextureHeight);
 //        // 新的宽高
@@ -428,7 +484,48 @@ public final class SmartRenderManager {
         mDisplayVertexBuffer.put(vertexCoord).position(0);
         mDisplayTextureBuffer.clear();
         mDisplayTextureBuffer.put(textureCoord).position(0);
+
+
+        adjustScaleCoordinateSize();
     }
+
+
+    /**
+     * 调整由于surface的大小与SurfaceView大小不一致带来的显示问题
+     */
+    private void adjustScaleCoordinateSize() {
+        Log.e(TAG, "mViewWidth == " + mViewWidth + ", mViewHeight == "  + mViewHeight);
+        Log.e(TAG, "mTextureWidth == " + mTextureWidth + ", mTextureHeight == "  + mTextureHeight);
+        Log.e(TAG, "mX == " + mXScale);
+
+
+        float[] textureCoord = null;
+        float[] vertexCoord = null;
+        float[] textureVertices = TextureRotationUtils.TextureVertices;
+        float[] vertexVertices = TextureRotationUtils.CubeVertices;
+
+        textureCoord = new float[] {
+                textureVertices[0] + mXScale, textureVertices[1],
+                textureVertices[2] - mXScale, textureVertices[3],
+                textureVertices[4] + mXScale, textureVertices[5],
+                textureVertices[6] - mXScale, textureVertices[7],
+        };
+
+
+        if (vertexCoord == null) {
+            vertexCoord = vertexVertices;
+        }
+        if (textureCoord == null) {
+            textureCoord = textureVertices;
+        }
+        // 更新VertexBuffer 和 TextureBuffer
+        mScaleVertexBuffer.clear();
+        mScaleVertexBuffer.put(vertexCoord).position(0);
+        mScaleTextureBuffer.clear();
+        mScaleTextureBuffer.put(textureCoord).position(0);
+    }
+
+
 
     /**
      * 计算距离

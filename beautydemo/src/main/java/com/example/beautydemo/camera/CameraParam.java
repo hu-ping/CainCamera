@@ -117,6 +117,8 @@ public final class CameraParam {
         showFps = false;
         aspectRatio = AspectRatio.RATIO_4_3;
         currentRatio = 0.5625f;
+//        currentRatio = 1.7777f;
+
         expectFps = DESIRED_PREVIEW_FPS;
         previewFps = 0;
         expectWidth = DEFAULT_16_9_WIDTH;
@@ -126,7 +128,7 @@ public final class CameraParam {
         highDefinition = false;
         orientation = 0;
         backCamera = false;
-        cameraId = Camera.CameraInfo.CAMERA_FACING_FRONT;
+        cameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
         supportFlash = false;
         focusWeight = 1000;
         recordable = true;
