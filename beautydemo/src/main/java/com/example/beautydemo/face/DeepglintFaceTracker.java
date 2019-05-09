@@ -386,10 +386,10 @@ public  class DeepglintFaceTracker implements IFaceTracker {
 
         static int faceIndex = 0;
         static int faceCaptureIndex = 0;
+        private ImageFrame frame = new ImageFrame();
         private synchronized void internalTrackFace(byte[] data, int width, int height) {
             FaceTrackParam faceTrackParam = FaceTrackParam.getInstance();
 
-            ImageFrame frame = new ImageFrame();
             frame.setRawData(data, width, height);
             Mat image = frame.getBgrMat();
             faceTrackParam.isBackCamera = false;
@@ -470,6 +470,9 @@ public  class DeepglintFaceTracker implements IFaceTracker {
 //                        oneFace.age = -1;
 //                    }
 
+                    if(image == null) {
+                        return;
+                    }
                     Mat faceImage = new Mat();
                     faceSDKManager.alignFace(image, face, faceImage);
                     FaceAttributes attributes = new FaceAttributes();
@@ -557,7 +560,7 @@ public  class DeepglintFaceTracker implements IFaceTracker {
 //                    Log.e(TAG, "statistics internalTrackFace  convertTo106 consume = " + (nowTime - lastTime));
 
 
-
+                    image = null;
                     for (int i = 0; i <  updateLandmarks.length/2; i++) {
 //                        Log.e(TAG, i + " == x:" +  updateLandmarks[i * 2] + ", y:" +  updateLandmarks[i * 2 + 1]);
 

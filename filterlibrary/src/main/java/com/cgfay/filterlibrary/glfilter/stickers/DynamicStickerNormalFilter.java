@@ -33,6 +33,8 @@ public class DynamicStickerNormalFilter extends DynamicStickerBaseFilter {
     private float[] mModelMatrix = new float[16];
     private float[] mMVPMatrix = new float[16];
 
+    private float[] mRotationMatrix = new float[16];
+
     // 长宽比
     private float mRatio;
 
@@ -290,6 +292,8 @@ public class DynamicStickerNormalFilter extends DynamicStickerBaseFilter {
 //        Matrix.rotateM(mModelMatrix, 0, 160, 1, 0, 0);
 //        Matrix.rotateM(mModelMatrix, 0, 180, 0, 1, 0);
 //        Matrix.rotateM(mModelMatrix, 0, 180, 0, 0, 1);
+        Matrix.setIdentityM(mRotationMatrix, 0);
+        Matrix.rotateM(mRotationMatrix, 0, 180, 0, 0, 1);
 
 
 
@@ -305,5 +309,7 @@ public class DynamicStickerNormalFilter extends DynamicStickerBaseFilter {
         Matrix.setIdentityM(mMVPMatrix, 0);
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
         Matrix.multiplyMM(mMVPMatrix, 0, mMVPMatrix, 0, mModelMatrix, 0);
+
+        Matrix.multiplyMM(mMVPMatrix, 0, mMVPMatrix, 0, mRotationMatrix, 0);
     }
 }

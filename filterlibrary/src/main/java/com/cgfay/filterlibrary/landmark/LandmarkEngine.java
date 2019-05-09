@@ -1,11 +1,14 @@
 package com.cgfay.filterlibrary.landmark;
 
+import android.util.Log;
 import android.util.SparseArray;
 
 /**
  * 人脸关键点引擎
  */
 public final class LandmarkEngine {
+
+    private static final String TAG = "LandmarkEngine";
 
     private static class EngineHolder {
         public static LandmarkEngine instance = new LandmarkEngine();
@@ -92,6 +95,12 @@ public final class LandmarkEngine {
     public void putOneFace(int index, OneFace oneFace) {
         synchronized (mSyncFence) {
             mFaceArrays.put(index, oneFace);
+
+
+            if(mFaceArrays.size() > 10) {
+                mFaceArrays.removeAt(mFaceArrays.size() -1);
+                Log.e(TAG, "The face arrays  outside of the range, remove the last one.");
+            }
         }
     }
 

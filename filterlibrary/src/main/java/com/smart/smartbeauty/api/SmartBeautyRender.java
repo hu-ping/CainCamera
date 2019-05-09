@@ -214,6 +214,7 @@ public class SmartBeautyRender{
 //                    .obtainMessage(SmartRenderHandler.MSG_RENDER));
 //
 //        }
+
         if (mPreviewRenderThread != null) {
             mPreviewRenderThread.requestRender();
         }

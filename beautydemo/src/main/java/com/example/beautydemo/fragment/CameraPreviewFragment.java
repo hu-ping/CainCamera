@@ -421,8 +421,6 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
         prepareTracker();
     }
 
-    int index = 0;
-    boolean draw = true;
 
     static boolean enableSaveBitmap = true;
     static int captureFrameCount = 0;
@@ -435,24 +433,23 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
     private Camera.PreviewCallback mCameraPreviewCallback = new Camera.PreviewCallback() {
         @Override
         public void onPreviewFrame(byte[] data, Camera camera) {
-                      // 人脸检测
-            mFaceTracker.trackFace(data,
-                    mCameraParam.previewWidth, mCameraParam.previewHeight);
 
-            if (CameraParam.getInstance().previewBuffer  != null) {
-                camera.addCallbackBuffer(CameraParam.getInstance().previewBuffer);
+            try {
+                // 人脸检测
+                mFaceTracker.trackFace(data,
+                        mCameraParam.previewWidth, mCameraParam.previewHeight);
+
+                if (CameraParam.getInstance().previewBuffer != null) {
+                    camera.addCallbackBuffer(CameraParam.getInstance().previewBuffer);
+                }
+
+
+                //请求刷新
+                SmartBeautyRender.getInstance().requestRender();
+
+            } catch (Exception ignored) {
+                Log.e(TAG, "ignored exception.");
             }
-
-//            index ++;
-//            if(index > 200) {
-//                draw = !draw;
-//                SmartBeautyRender.getInstance().switchDrawSticker(draw);
-//                index = 0;
-//            }
-
-             //请求刷新
-            SmartBeautyRender.getInstance().requestRender();
-
 
 
 

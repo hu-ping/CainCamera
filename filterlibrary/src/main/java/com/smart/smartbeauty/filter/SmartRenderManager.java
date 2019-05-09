@@ -364,7 +364,7 @@ public final class SmartRenderManager {
      * @param mCurrentTexture
      */
     public void drawFacePoint(int mCurrentTexture) {
-        mBeautyParam.drawFacePoints = true;
+        mBeautyParam.drawFacePoints = false;
         if (mFilterArrays.get(SmartRenderIndex.FacePointIndex) != null) {
             if (mBeautyParam.drawFacePoints && LandmarkEngine.getInstance().hasFace()) {
                 mFilterArrays.get(SmartRenderIndex.FacePointIndex).drawFrame(mCurrentTexture, mDisplayVertexBuffer, mDisplayTextureBuffer);

@@ -41,29 +41,15 @@ public class CameraActivity extends AppCompatActivity implements OnPageOperation
                     .commit();
         }
 
-
-
-        faceTrackerRequestNetwork();
-
     }
 
-    /**
-     * 人脸检测SDK验证，可以替换成自己的SDK
-     */
-    private void faceTrackerRequestNetwork() {
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                DeepglintFaceTracker.requestFaceNetwork(CameraActivity.this);
-//            }
-//        }).start();
-    }
 
     @Override
     protected void onResume() {
         super.onResume();
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+
+//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
+//                WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
     }
 
     @Override

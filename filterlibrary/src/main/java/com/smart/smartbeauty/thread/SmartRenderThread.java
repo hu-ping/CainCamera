@@ -150,17 +150,24 @@ public class SmartRenderThread extends HandlerThread {
      */
     void drawFrame() {
         // 如果存在新的帧，则更新帧
-        synchronized (mSyncFrameNum) {
-            synchronized (mSyncFence) {
-                if (mSurfaceTexture != null) {
-                    while (mFrameNum != 0) {
-                        mSurfaceTexture.updateTexImage();
-                        --mFrameNum;
-                    }
-                } else {
-                    return;
-                }
-            }
+//        synchronized (mSyncFrameNum) {
+//            synchronized (mSyncFence) {
+//                if (mSurfaceTexture != null) {
+//                    while (mFrameNum != 0) {
+//                        mSurfaceTexture.updateTexImage();
+//                        --mFrameNum;
+//                    }
+//                } else {
+//                    return;
+//                }
+//            }
+//
+
+
+        if (mSurfaceTexture != null) {
+            mSurfaceTexture.updateTexImage();
+        } else {
+            return;
         }
 
         // 切换渲染上下文
@@ -227,9 +234,8 @@ public class SmartRenderThread extends HandlerThread {
             if (isPreviewing) {
                 ++mFrameNum;
                 if (mRenderHandler != null) {
-                    mRenderHandler.removeMessages(SmartRenderHandler.MSG_RENDER);
-                    mRenderHandler.sendMessage(mRenderHandler
-                            .obtainMessage(SmartRenderHandler.MSG_RENDER));
+//                    mRenderHandler.removeMessages(SmartRenderHandler.MSG_RENDER);
+                    mRenderHandler.sendMessage(mRenderHandler.obtainMessage(SmartRenderHandler.MSG_RENDER));
                 }
             }
         }

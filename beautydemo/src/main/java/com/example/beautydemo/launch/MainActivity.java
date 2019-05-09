@@ -51,12 +51,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void initView() {
         findViewById(R.id.btn_camera).setOnClickListener(this);
-//        findViewById(R.id.btn_edit_video).setOnClickListener(this);
-//        findViewById(R.id.btn_edit_picture).setOnClickListener(this);
 
-
-
-        // initialize url.
+        // initialize.
         final EditText activationCodeInput = (EditText) findViewById(R.id.activation_input_edit_text);
         activationCodeInput.addTextChangedListener(new TextWatcher() {
             @Override
@@ -98,16 +94,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 previewCamera();
                 break;
             }
-
-//            case R.id.btn_edit_video: {
-//                scanMedia(false, false,true);
-//                break;
-//            }
-//
-//            case R.id.btn_edit_picture: {
-//                scanMedia(false, true, false);
-//                break;
-//            }
         }
     }
 
@@ -117,82 +103,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * 打开预览页面
      */
     private void previewCamera() {
-//        PreviewEngine.from(this)
-//                .setCameraRatio(AspectRatio.Ratio_16_9)
-//                .showFacePoints(false)
-//                .showFps(true)
-//                .setGalleryListener(new OnGallerySelectedListener() {
-//                    @Override
-//                    public void onGalleryClickListener(GalleryType type) {
-//                        scanMedia(type == GalleryType.ALL);
-//                    }
-//                })
-//                .setPreviewCaptureListener(new OnPreviewCaptureListener() {
-//                    @Override
-//                    public void onMediaSelectedListener(String path, GalleryType type) {
-//                        if (type == GalleryType.PICTURE) {
-//                            Intent intent = new Intent(MainActivity.this, ImageEditActivity.class);
-//                            intent.putExtra(ImageEditActivity.PATH, path);
-//                            startActivity(intent);
-//                        } else if (type == GalleryType.VIDEO) {
-//                            Intent intent = new Intent(MainActivity.this, VideoCropActivity.class);
-//                            intent.putExtra(VideoCropActivity.PATH, path);
-//                            startActivity(intent);
-//                        }
-//                    }
-//                })
-//                .startPreview();
-
-
         Intent intent = new Intent(this, CameraActivity.class);
         intent.putExtra("activationCode", activationCode);
         startActivity(intent);
     }
-
-//    /**
-//     * 扫描媒体库
-//     */
-//    private void scanMedia(boolean enableGif) {
-//        scanMedia(enableGif, true, true);
-//    }
-//
-//    /**
-//     * 扫描媒体库
-//     * @param enableGif
-//     * @param enableImage
-//     * @param enableVideo
-//     */
-//    private void scanMedia(boolean enableGif, boolean enableImage, boolean enableVideo) {
-//        MediaScanEngine.from(this)
-//                .setMimeTypes(MimeType.ofAll())
-//                .ImageLoader(new GlideMediaLoader())
-//                .spanCount(4)
-//                .showCapture(true)
-//                .showImage(enableImage)
-//                .showVideo(enableVideo)
-//                .enableSelectGif(enableGif)
-//                .setCaptureListener(new OnCaptureListener() {
-//                    @Override
-//                    public void onCapture() {
-//                        previewCamera();
-//                    }
-//                })
-//                .setMediaSelectedListener(new OnMediaSelectedListener() {
-//                    @Override
-//                    public void onSelected(List<Uri> uriList, List<String> pathList, boolean isVideo) {
-//                        if (isVideo) {
-//                            Intent intent = new Intent(MainActivity.this, VideoCropActivity.class);
-//                            intent.putExtra(VideoCropActivity.PATH, pathList.get(0));
-//                            startActivity(intent);
-//                        } else {
-//                            Intent intent = new Intent(MainActivity.this, ImageEditActivity.class);
-//                            intent.putExtra(ImageEditActivity.PATH, pathList.get(0));
-//                            startActivity(intent);
-//                        }
-//                    }
-//                })
-//                .scanMedia();
-//    }
 
 
 
