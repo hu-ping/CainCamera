@@ -78,8 +78,8 @@ public final class SmartRenderManager {
     // 上下文
     private Context mContext;
 
-    private float mXScale = 1;
-    private float mYScale = 1;
+    private float mXScale = 0;
+    private float mYScale = 0;
 
     /**
      * 初始化
@@ -298,6 +298,8 @@ public final class SmartRenderManager {
         }
         currentTexture = mFilterArrays.get(SmartRenderIndex.CameraIndex)
                 .drawFrameBuffer(currentTexture, mVertexBuffer, mTextureBuffer);
+
+        mBeautyParam.showCompare = false;
         // 如果处于对比状态，不做处理
         if (!mBeautyParam.showCompare) {
             // 美颜滤镜
@@ -394,10 +396,10 @@ public final class SmartRenderManager {
         mViewHeight = height;
 
         //TODO: huping add.
-        if(mOrientation == 0 && mTextureWidth > mTextureHeight) {
-            mXScale = mViewWidth * mTextureHeight/mViewHeight;
-            mXScale = (mTextureWidth - mXScale)/2/mTextureWidth;
-        }
+//        if(mOrientation == 0 && mTextureWidth > mTextureHeight) {
+//            mXScale = mViewWidth * mTextureHeight/mViewHeight;
+//            mXScale = (mTextureWidth - mXScale)/2/mTextureWidth;
+//        }
 
 
         adjustCoordinateSize();

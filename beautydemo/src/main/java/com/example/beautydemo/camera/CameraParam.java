@@ -117,7 +117,7 @@ public final class CameraParam {
         showFps = false;
         aspectRatio = AspectRatio.RATIO_4_3;
         currentRatio = 0.5625f;
-//        currentRatio = 1.7777f;
+        currentRatio = 1.7777f;
 
         expectFps = DESIRED_PREVIEW_FPS;
         previewFps = 0;

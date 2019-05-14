@@ -11,6 +11,7 @@ import com.cgfay.filterlibrary.landmark.LandmarkEngine;
 import com.cgfay.filterlibrary.landmark.OneFace;
 
 import java.nio.FloatBuffer;
+import java.util.LinkedList;
 
 /**
  * 人脸关键点调试滤镜
@@ -93,7 +94,7 @@ public class GLImageFacePointsFilter extends GLImageFilter {
         // 逐个顶点绘制出来
         synchronized (this) {
             if (LandmarkEngine.getInstance().getFaceSize() > 0) {
-                SparseArray<OneFace> faceArrays = LandmarkEngine.getInstance().getFaceArrays();
+                LinkedList<OneFace> faceArrays = LandmarkEngine.getInstance().getFaceArrays();
                 for (int i = 0; i < faceArrays.size(); i++) {
                     if (faceArrays.get(i).vertexPoints != null) {
                         LandmarkEngine.getInstance().calculateExtraFacePoints(mPoints, i);

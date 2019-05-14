@@ -409,6 +409,7 @@ public final class KSFaceTracker implements IFaceTracker{
          * @param height    图像高度
          * @return          是否检测成功
          */
+        OneFace oneFace = new OneFace();
         private synchronized void internalTrackFace(byte[] data, int width, int height) {
             FaceTrackParam faceTrackParam = FaceTrackParam.getInstance();
             if (!faceTrackParam.canFaceTrack || facepp == null) {
@@ -474,7 +475,7 @@ public final class KSFaceTracker implements IFaceTracker{
                     }
                     Facepp.Face face = faces[index];
 
-                    OneFace oneFace = LandmarkEngine.getInstance().getOneFace(index);
+
                     // 是否检测性别年龄属性
                     if (faceTrackParam.enableFaceProperty) {
                         facepp.getAgeGender(face);
@@ -510,9 +511,10 @@ public final class KSFaceTracker implements IFaceTracker{
                     }
 
                     // 获取一个人的关键点坐标
-                    if (oneFace.vertexPoints == null || oneFace.vertexPoints.length != face.points.length * 2) {
-                        oneFace.vertexPoints = new float[face.points.length * 2];
-                    }
+//                    if (oneFace.vertexPoints == null || oneFace.vertexPoints.length != face.points.length * 2) {
+//                        oneFace.vertexPoints = new float[face.points.length * 2];
+//                    }
+
                     for (int i = 0; i < face.points.length; i++) {
 //                        Log.e(TAG, i + " == x:" + face.points[i].x + ", y:" + face.points[i].y);
                         // orientation = 0、3 表示竖屏，1、2 表示横屏
@@ -565,7 +567,7 @@ public final class KSFaceTracker implements IFaceTracker{
 //                    }
 
                     // 插入人脸对象
-                    LandmarkEngine.getInstance().putOneFace(index, oneFace);
+                    LandmarkEngine.getInstance().putOneFace(oneFace);
                 }
             }
             // 设置人脸个数

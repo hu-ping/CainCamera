@@ -40,19 +40,17 @@ public class SmartLandmark {
      * 获取一个人脸关键点数据对象
      * @return
      */
-    public SmartOneFace getOneFace(int index) {
-        OneFace one =  LandmarkEngine.getInstance().getOneFace(index);
-        return toSmartOneFace(one);
+    public OneFace getFreeFace() {
+        return  LandmarkEngine.getInstance().getFreeFace();
     }
 
 
     /**
      * 插入一个人脸关键点数据对象
-     * @param index
+     *
      */
-    public void putOneFace(int index, SmartOneFace oneFace) {
-        OneFace one = toOneFace(oneFace);
-        LandmarkEngine.getInstance().putOneFace(index, one);
+    public void putOneFace(OneFace oneFace) {
+        LandmarkEngine.getInstance().putOneFace(oneFace);
     }
 
     /**

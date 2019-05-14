@@ -6,6 +6,7 @@ import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.cgfay.filterlibrary.landmark.OneFace;
 import com.deepglint.hri.face.FaceSDKManager;
 import com.deepglint.hri.facesdk.FaceAttributes;
 import com.deepglint.hri.facesdk.FaceInfo;
@@ -384,10 +385,16 @@ public  class DeepglintFaceTracker implements IFaceTracker {
             faceSDKManager = FaceSDKManager.getInstance();
         }
 
-        static int faceIndex = 0;
-        static int faceCaptureIndex = 0;
+
+
         private ImageFrame frame = new ImageFrame();
+        private FaceInfo[] faceInfos = null;
+        private Mat faceImage = null;
         private synchronized void internalTrackFace(byte[] data, int width, int height) {
+            if(faceImage == null) {
+                 faceImage = new Mat();
+            }
+
             FaceTrackParam faceTrackParam = FaceTrackParam.getInstance();
 
             frame.setRawData(data, width, height);
@@ -417,7 +424,8 @@ public  class DeepglintFaceTracker implements IFaceTracker {
             }
 
             long now = System.currentTimeMillis();
-            FaceInfo[] faceInfos = faceSDKManager.getTrackingFaces(image, System.currentTimeMillis());
+            faceInfos = faceSDKManager.getTrackingFaces(image, System.currentTimeMillis());
+
 
 
 
@@ -442,6 +450,9 @@ public  class DeepglintFaceTracker implements IFaceTracker {
 //                    + ", previewTrack = " + faceTrackParam.previewTrack
 //                    + ", isBackCamera = " + faceTrackParam.isBackCamera);
 
+            OneFace oneFace = SmartLandmark.getInstance().getFreeFace();
+
+
             // 计算人脸关键点
             if (faceInfos != null && faceInfos.length > 0) {
                 for (int index = 0; index < faceInfos.length; index++) {
@@ -458,7 +469,7 @@ public  class DeepglintFaceTracker implements IFaceTracker {
 
                     FaceInfo face = faceInfos[index];
 
-                    SmartOneFace oneFace = SmartLandmark.getInstance().getOneFace(index);
+
 //                    // 是否检测性别年龄属性
 //                    if (faceTrackParam.enableFaceProperty) {
 //                        facepp.getAgeGender(face);
@@ -473,13 +484,13 @@ public  class DeepglintFaceTracker implements IFaceTracker {
                     if(image == null) {
                         return;
                     }
-                    Mat faceImage = new Mat();
                     faceSDKManager.alignFace(image, face, faceImage);
                     FaceAttributes attributes = new FaceAttributes();
                     FaceSDKManager.ErrorCode code = faceSDKManager.generateAttributes(
                             faceImage,
                             attributes
                     );
+
 
                     if(attributes.gender == 0) {
                         oneFace.gender = SmartOneFace.GENDER_MAN;
@@ -547,9 +558,10 @@ public  class DeepglintFaceTracker implements IFaceTracker {
 //                    }
 
                     // 获取一个人的关键点坐标
-                    if (oneFace.vertexPoints == null || oneFace.vertexPoints.length != face.landmarks.length * 2) {
-                        oneFace.vertexPoints = new float[212];
-                    }
+//                    if (oneFace.vertexPoints == null || oneFace.vertexPoints.length != face.landmarks.length * 2) {
+//                        oneFace.vertexPoints = new float[212];
+//                    }
+
 
 
 
@@ -560,7 +572,6 @@ public  class DeepglintFaceTracker implements IFaceTracker {
 //                    Log.e(TAG, "statistics internalTrackFace  convertTo106 consume = " + (nowTime - lastTime));
 
 
-                    image = null;
                     for (int i = 0; i <  updateLandmarks.length/2; i++) {
 //                        Log.e(TAG, i + " == x:" +  updateLandmarks[i * 2] + ", y:" +  updateLandmarks[i * 2 + 1]);
 
@@ -640,9 +651,8 @@ public  class DeepglintFaceTracker implements IFaceTracker {
                         trackFaceInitTime = currentTime;
                     }
 
-
                     // 插入人脸对象
-                    SmartLandmark.getInstance().putOneFace(index, oneFace);
+                    SmartLandmark.getInstance().putOneFace(oneFace);
 
                 }
             }
@@ -650,29 +660,25 @@ public  class DeepglintFaceTracker implements IFaceTracker {
 
 
             // 设置人脸个数
-            SmartLandmark.getInstance().setFaceSize(faceInfos!= null ? faceInfos.length : 0);
+//            SmartLandmark.getInstance().setFaceSize(faceInfos!= null ? faceInfos.length : 0);
             // 检测完成回调
             if (faceTrackParam.trackerCallback != null) {
                 faceTrackParam.trackerCallback.onTrackingFinish();
             }
 
         }
+
+
         static int captureFrameCount = 0;
         static double nextCaptureStatisticsTime = -1;
         static double UNIT_TIME_INTERVAL = 1000;
         static long trackFaceInitTime = -1;
         static double nextCapturePreprocessingStatisticsTime = -1;
-
-
-
+        float[] updateLandmarks = new float[212];
+        //脸颊
+        double[] xArr = new double[13];
+        double[] yArr = new double[13];
         private float[] convertTo106(FaceInfo face) {
-            float[] updateLandmarks = new float[212];
-
-
-            //脸颊
-            double[] xArr = new double[13];
-            double[] yArr = new double[13];
-
             for (int i = 0; i < 13; i++) {
                 xArr[i] = face.landmarks[i * 2];
                 yArr[i] = face.landmarks[i * 2 + 1];

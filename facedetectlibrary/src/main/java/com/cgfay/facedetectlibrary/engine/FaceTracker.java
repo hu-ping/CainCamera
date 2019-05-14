@@ -467,7 +467,7 @@ public final class FaceTracker {
                     }
                     Facepp.Face face = faces[index];
 
-                    OneFace oneFace = LandmarkEngine.getInstance().getOneFace(index);
+                    OneFace oneFace = LandmarkEngine.getInstance().getOneFace();
                     // 是否检测性别年龄属性
                     if (faceTrackParam.enableFaceProperty) {
                         facepp.getAgeGender(face);
@@ -558,7 +558,7 @@ public final class FaceTracker {
 //                    }
 
                     // 插入人脸对象
-                    LandmarkEngine.getInstance().putOneFace(index, oneFace);
+                    LandmarkEngine.getInstance().putOneFace(oneFace);
                 }
             }
             // 设置人脸个数

@@ -143,7 +143,7 @@ public class DynamicStickerNormalFilter extends DynamicStickerBaseFilter {
 //            Log.e(TAG, "faceCount = " + faceCount);
 
             for (int faceIndex = 0; faceIndex < faceCount; faceIndex++) {
-                OneFace oneFace = LandmarkEngine.getInstance().getOneFace(faceIndex);
+                OneFace oneFace = LandmarkEngine.getInstance().getOneFace();
 
                 // 如果置信度大于0.5，表示这是一个正常的人脸，绘制贴纸
                 if (oneFace.confidence > 0.5f) {
@@ -310,6 +310,5 @@ public class DynamicStickerNormalFilter extends DynamicStickerBaseFilter {
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
         Matrix.multiplyMM(mMVPMatrix, 0, mMVPMatrix, 0, mModelMatrix, 0);
 
-        Matrix.multiplyMM(mMVPMatrix, 0, mMVPMatrix, 0, mRotationMatrix, 0);
     }
 }

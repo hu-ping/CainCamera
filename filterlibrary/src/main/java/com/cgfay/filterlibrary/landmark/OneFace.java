@@ -24,48 +24,51 @@ public class OneFace {
     // 顶点坐标
     public float[] vertexPoints;
 
-    @Override
-    protected OneFace clone() {
-        OneFace copy = new OneFace();
-        copy.confidence = this.confidence;
-        copy.pitch = this.pitch;
-        copy.yaw = this.yaw;
-        copy.roll = this.roll;
-        copy.age = this.age;
-        copy.gender = this.gender;
-        copy.vertexPoints = this.vertexPoints.clone();
-        return copy;
-    }
 
-    /**
-     * 复制数据
-     * @param origin
-     * @return
-     */
-    public static OneFace[] arrayCopy(OneFace[] origin) {
-        if (origin == null) {
-            return null;
-        }
-        OneFace[] copy = new OneFace[origin.length];
-        for (int i = 0; i < origin.length; i++) {
-            copy[i] = origin[i].clone();
-        }
-        return copy;
-    }
 
-    /**
-     * 复制数据
-     * @param origin
-     * @return
-     */
-    public static OneFace[] arrayCopy(SparseArray<OneFace> origin) {
-        if (origin == null) {
-            return null;
-        }
-        OneFace[] copy = new OneFace[origin.size()];
-        for (int i = 0; i < origin.size(); i++) {
-            copy[i] = origin.get(i).clone();
-        }
-        return copy;
-    }
+
+//    @Override
+//    protected OneFace clone() {
+//        OneFace copy = new OneFace();
+//        copy.confidence = this.confidence;
+//        copy.pitch = this.pitch;
+//        copy.yaw = this.yaw;
+//        copy.roll = this.roll;
+//        copy.age = this.age;
+//        copy.gender = this.gender;
+//        copy.vertexPoints = this.vertexPoints.clone();
+//        return copy;
+//    }
+//
+//    /**
+//     * 复制数据
+//     * @param origin
+//     * @return
+//     */
+//    public static OneFace[] arrayCopy(OneFace[] origin) {
+//        if (origin == null) {
+//            return null;
+//        }
+//        OneFace[] copy = new OneFace[origin.length];
+//        for (int i = 0; i < origin.length; i++) {
+//            copy[i] = origin[i].clone();
+//        }
+//        return copy;
+//    }
+//
+//    /**
+//     * 复制数据
+//     * @param origin
+//     * @return
+//     */
+//    public static OneFace[] arrayCopy(SparseArray<OneFace> origin) {
+//        if (origin == null) {
+//            return null;
+//        }
+//        OneFace[] copy = new OneFace[origin.size()];
+//        for (int i = 0; i < origin.size(); i++) {
+//            copy[i] = origin.get(i).clone();
+//        }
+//        return copy;
+//    }
 }

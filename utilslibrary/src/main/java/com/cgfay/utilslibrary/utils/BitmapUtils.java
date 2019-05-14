@@ -382,8 +382,10 @@ public class BitmapUtils {
             bos = new BufferedOutputStream(new FileOutputStream(filePath));
             Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
             bitmap.copyPixelsFromBuffer(buffer);
-            bitmap = BitmapUtils.rotateBitmap(bitmap, 180, true);
-            bitmap = BitmapUtils.flipBitmap(bitmap, true);
+
+//            bitmap = BitmapUtils.rotateBitmap(bitmap, 180, true);
+//            bitmap = BitmapUtils.flipBitmap(bitmap, true);
+
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
             bitmap.recycle();
             bitmap = null;

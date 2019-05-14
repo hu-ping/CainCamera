@@ -1,7 +1,9 @@
 package com.cgfay.filterlibrary.landmark;
 
 import android.util.Log;
-import android.util.SparseArray;
+
+import java.security.acl.LastOwnerException;
+import java.util.LinkedList;
 
 /**
  * 人脸关键点引擎
@@ -13,10 +15,7 @@ public final class LandmarkEngine {
     private static class EngineHolder {
         public static LandmarkEngine instance = new LandmarkEngine();
     }
-
-    private LandmarkEngine() {
-        mFaceArrays = new SparseArray<OneFace>();
-    }
+    
 
     public static LandmarkEngine getInstance() {
         return EngineHolder.instance;
@@ -26,11 +25,104 @@ public final class LandmarkEngine {
 
     // 人脸对象列表
     // 由于人脸数据个数有限，图像中的人脸个数小于千级，而且人脸索引是连续的，用SparseArray比Hashmap性能要更好
-    private final SparseArray<OneFace> mFaceArrays;
+    private  LinkedList<OneFace> mDecodableFrame;
+    
+    private LinkedList<OneFace> mFreeFrame;
 
     // 手机当前的方向，0表示正屏幕，3表示倒过来，1表示左屏幕，2表示右屏幕
     private float mOrientation;
     private boolean mNeedFlip;
+
+    private LandmarkEngine() {
+        initFcaeQueue();
+    }
+
+    public void initFcaeQueue() {
+        mDecodableFrame = new LinkedList<>();
+        mFreeFrame = new LinkedList<>();
+        
+        for(int i = 0; i < 10; i++) {
+            OneFace one = new OneFace();
+            one.vertexPoints = new float[212];
+            mFreeFrame.add(one);
+        }
+
+        Log.e(TAG, "initFcaeQueue: mFreeFrame.size = " + mFreeFrame.size()
+                + ", mDecodableFrame.size() = " + mDecodableFrame.size());
+    }
+
+
+    public OneFace getFreeFace() {
+        OneFace oneFace = null;
+
+        oneFace = mFreeFrame.removeFirst();
+        mFreeFrame.add(oneFace);
+
+        return oneFace;
+    }
+
+
+    /**
+     //     * 获取一个人脸关键点数据对象
+     //     * @return
+     //     */
+    public OneFace getOneFace() {
+        Log.e(TAG, "getOneFace");
+        OneFace oneFace = null;
+        synchronized (mSyncFence) {
+            if(mDecodableFrame.size() > 0) {
+                oneFace = mDecodableFrame.removeFirst();
+            }
+        }
+        return oneFace;
+    }
+
+    
+//    public OneFace getFreeFace() {
+//        if(mFreeFrame.size() > 0) {
+//            return mFreeFrame.removeFirst();
+//        } else {
+//            synchronized (mSyncFence) {
+//                for (int i = 0; i < mDecodableFrame.size(); i++) {
+//                    OneFace one = mDecodableFrame.removeFirst();
+//                    mFreeFrame.add(one);
+//                    Log.e(TAG, "mFreeFrame.size = " + mFreeFrame.size()
+//                            + ", mDecodableFrame.size() = " + mDecodableFrame.size());
+//                }
+//            }
+//
+//            return mFreeFrame.removeFirst();
+//        }
+//    }
+
+//    /**
+//     * 获取一个人脸关键点数据对象
+//     * @return
+//     */
+//    public OneFace getOneFace() {
+//        Log.e(TAG, "getOneFace");
+//        OneFace oneFace = null;
+//        synchronized (mSyncFence) {
+//            if(mDecodableFrame.size() > 0) {
+//                oneFace = mDecodableFrame.removeFirst();
+//                mFreeFrame.add(oneFace);
+//            }
+//        }
+//        return oneFace;
+//    }
+
+
+
+
+    /**
+     * 插入一个人脸关键点数据对象
+     */
+    public void putOneFace(OneFace oneFace) {
+        synchronized (mSyncFence) {
+            mDecodableFrame.add(oneFace);
+        }
+    }
+    
 
     /**
      * 设置旋转角度
@@ -55,8 +147,8 @@ public final class LandmarkEngine {
     public void setFaceSize(int size) {
         synchronized (mSyncFence) {
             // 剔除脏数据，有可能在前一次检测的人脸多余当前人脸
-            if (mFaceArrays.size() > size) {
-                mFaceArrays.removeAtRange(size, mFaceArrays.size() - size);
+            if (mDecodableFrame.size() > size) {
+//                mDecodableFrame.removeAtRange(size, mDecodableFrame.size() - size);
             }
         }
     }
@@ -68,56 +160,26 @@ public final class LandmarkEngine {
     public boolean hasFace() {
         boolean result;
         synchronized (mSyncFence) {
-            result = mFaceArrays.size() > 0;
+            result = mDecodableFrame.size() > 0;
         }
         return result;
     }
 
-    /**
-     * 获取一个人脸关键点数据对象
-     * @return
-     */
-    public OneFace getOneFace(int index) {
-        OneFace oneFace = null;
-        synchronized (mSyncFence) {
-            oneFace = mFaceArrays.get(index);
-            if (oneFace == null) {
-                oneFace = new OneFace();
-            }
-        }
-        return oneFace;
-    }
-
-    /**
-     * 插入一个人脸关键点数据对象
-     * @param index
-     */
-    public void putOneFace(int index, OneFace oneFace) {
-        synchronized (mSyncFence) {
-            mFaceArrays.put(index, oneFace);
-
-
-            if(mFaceArrays.size() > 10) {
-                mFaceArrays.removeAt(mFaceArrays.size() -1);
-                Log.e(TAG, "The face arrays  outside of the range, remove the last one.");
-            }
-        }
-    }
 
     /**
      * 获取人脸个数
      * @return
      */
     public int getFaceSize() {
-        return mFaceArrays.size();
+        return mDecodableFrame.size();
     }
 
     /**
      * 获取人脸列表
      * @return
      */
-    public SparseArray<OneFace> getFaceArrays() {
-        return mFaceArrays;
+    public LinkedList<OneFace> getFaceArrays() {
+        return mDecodableFrame;
     }
 
     /**
@@ -125,7 +187,7 @@ public final class LandmarkEngine {
      */
     public void clearAll() {
         synchronized (mSyncFence) {
-            mFaceArrays.clear();
+            mDecodableFrame.clear();
         }
     }
 
@@ -135,11 +197,11 @@ public final class LandmarkEngine {
      * @param index
      */
     public void calculateExtraFacePoints(float[] vertexPoints, int index) {
-        if (vertexPoints == null || index >= mFaceArrays.size() || mFaceArrays.get(index) == null
-                || mFaceArrays.get(index).vertexPoints.length + 8 * 2 > vertexPoints.length) {
+        if (vertexPoints == null || index >= mDecodableFrame.size() || mDecodableFrame.get(index) == null
+                || mDecodableFrame.get(index).vertexPoints.length + 8 * 2 > vertexPoints.length) {
             return;
         }
-        OneFace oneFace = mFaceArrays.get(index);
+        OneFace oneFace = mDecodableFrame.get(index);
         // 复制关键点的数据
         System.arraycopy(oneFace.vertexPoints, 0, vertexPoints, 0, oneFace.vertexPoints.length);
         // 新增的人脸关键点
@@ -340,57 +402,57 @@ public final class LandmarkEngine {
      */
     public synchronized void getEyeVertices(float[] vertexPoints, int faceIndex) {
         if (vertexPoints == null || vertexPoints.length < 80
-                || faceIndex >= mFaceArrays.size() || mFaceArrays.get(faceIndex) == null) {
+                || faceIndex >= mDecodableFrame.size() || mDecodableFrame.get(faceIndex) == null) {
             return;
         }
 
         // 关键点0 ~ 3，index = 0 ~ 3 4个
         for (int i = 0; i < 4; i++) {
-            vertexPoints[i * 2] = mFaceArrays.get(faceIndex).vertexPoints[i * 2];
-            vertexPoints[i * 2 + 1] = mFaceArrays.get(faceIndex).vertexPoints[i * 2 + 1];
+            vertexPoints[i * 2] = mDecodableFrame.get(faceIndex).vertexPoints[i * 2];
+            vertexPoints[i * 2 + 1] = mDecodableFrame.get(faceIndex).vertexPoints[i * 2 + 1];
         }
 
         // 关键点29 ~ 33，index = 4 ~ 8 5个
         for (int i = 29; i < 34; i++) {
-            vertexPoints[(i - 29 + 4) * 2] = mFaceArrays.get(faceIndex).vertexPoints[i * 2];
-            vertexPoints[(i - 29 + 4) * 2 + 1] = mFaceArrays.get(faceIndex).vertexPoints[i * 2 + 1];
+            vertexPoints[(i - 29 + 4) * 2] = mDecodableFrame.get(faceIndex).vertexPoints[i * 2];
+            vertexPoints[(i - 29 + 4) * 2 + 1] = mDecodableFrame.get(faceIndex).vertexPoints[i * 2 + 1];
         }
 
         // 关键点42 ~ 44，index = 9 ~ 11 3个
         for (int i = 42; i < 45; i++) {
-            vertexPoints[(i - 42 + 9) * 2] = mFaceArrays.get(faceIndex).vertexPoints[i * 2];
-            vertexPoints[(i - 42 + 9) * 2 + 1] = mFaceArrays.get(faceIndex).vertexPoints[i * 2 +  1];
+            vertexPoints[(i - 42 + 9) * 2] = mDecodableFrame.get(faceIndex).vertexPoints[i * 2];
+            vertexPoints[(i - 42 + 9) * 2 + 1] = mDecodableFrame.get(faceIndex).vertexPoints[i * 2 +  1];
         }
 
         // 关键点52 ~ 73，index = 12 ~ 33 22个
         for (int i = 52; i < 74; i++) {
-            vertexPoints[(i - 52 + 12) * 2] = mFaceArrays.get(faceIndex).vertexPoints[i * 2];
-            vertexPoints[(i - 52 + 12) * 2 + 1] = mFaceArrays.get(faceIndex).vertexPoints[i * 2 + 1];
+            vertexPoints[(i - 52 + 12) * 2] = mDecodableFrame.get(faceIndex).vertexPoints[i * 2];
+            vertexPoints[(i - 52 + 12) * 2 + 1] = mDecodableFrame.get(faceIndex).vertexPoints[i * 2 + 1];
         }
 
         // 右眼上中心
-        vertexPoints[34 * 2] = mFaceArrays.get(faceIndex).vertexPoints[75 * 2];
-        vertexPoints[34 * 2 + 1] = mFaceArrays.get(faceIndex).vertexPoints[75 * 2 + 1];
+        vertexPoints[34 * 2] = mDecodableFrame.get(faceIndex).vertexPoints[75 * 2];
+        vertexPoints[34 * 2 + 1] = mDecodableFrame.get(faceIndex).vertexPoints[75 * 2 + 1];
 
         // 右眼下中心
-        vertexPoints[35 * 2] = mFaceArrays.get(faceIndex).vertexPoints[76 * 2];
-        vertexPoints[35 * 2 + 1] = mFaceArrays.get(faceIndex).vertexPoints[76 * 2 + 1];
+        vertexPoints[35 * 2] = mDecodableFrame.get(faceIndex).vertexPoints[76 * 2];
+        vertexPoints[35 * 2 + 1] = mDecodableFrame.get(faceIndex).vertexPoints[76 * 2 + 1];
 
         // 关键点78
-        vertexPoints[36 * 2] = mFaceArrays.get(faceIndex).vertexPoints[78 * 2];
-        vertexPoints[36 * 2 + 1] = mFaceArrays.get(faceIndex).vertexPoints[78 * 2 + 1];
+        vertexPoints[36 * 2] = mDecodableFrame.get(faceIndex).vertexPoints[78 * 2];
+        vertexPoints[36 * 2 + 1] = mDecodableFrame.get(faceIndex).vertexPoints[78 * 2 + 1];
 
         // 关键点79
-        vertexPoints[37 * 2] = mFaceArrays.get(faceIndex).vertexPoints[79 * 2];
-        vertexPoints[37 * 2 + 1] = mFaceArrays.get(faceIndex).vertexPoints[79 * 2 + 1];
+        vertexPoints[37 * 2] = mDecodableFrame.get(faceIndex).vertexPoints[79 * 2];
+        vertexPoints[37 * 2 + 1] = mDecodableFrame.get(faceIndex).vertexPoints[79 * 2 + 1];
 
         // 左眉毛下方中心点
-        vertexPoints[38 * 2] = (mFaceArrays.get(faceIndex).vertexPoints[3 * 2] + mFaceArrays.get(faceIndex).vertexPoints[44 * 2]) * 0.5f;
-        vertexPoints[38 * 2 + 1] = (mFaceArrays.get(faceIndex).vertexPoints[3 * 2 + 1] + mFaceArrays.get(faceIndex).vertexPoints[44 * 2 + 1]) * 0.5f;
+        vertexPoints[38 * 2] = (mDecodableFrame.get(faceIndex).vertexPoints[3 * 2] + mDecodableFrame.get(faceIndex).vertexPoints[44 * 2]) * 0.5f;
+        vertexPoints[38 * 2 + 1] = (mDecodableFrame.get(faceIndex).vertexPoints[3 * 2 + 1] + mDecodableFrame.get(faceIndex).vertexPoints[44 * 2 + 1]) * 0.5f;
 
         // 右眉毛下方中心点
-        vertexPoints[39 * 2] = (mFaceArrays.get(faceIndex).vertexPoints[29 * 2] + mFaceArrays.get(faceIndex).vertexPoints[44 * 2]) * 0.5f;
-        vertexPoints[39 * 2 + 1] = (mFaceArrays.get(faceIndex).vertexPoints[29 * 2 + 1] + mFaceArrays.get(faceIndex).vertexPoints[44 * 2 + 1]) * 0.5f;
+        vertexPoints[39 * 2] = (mDecodableFrame.get(faceIndex).vertexPoints[29 * 2] + mDecodableFrame.get(faceIndex).vertexPoints[44 * 2]) * 0.5f;
+        vertexPoints[39 * 2 + 1] = (mDecodableFrame.get(faceIndex).vertexPoints[29 * 2 + 1] + mDecodableFrame.get(faceIndex).vertexPoints[44 * 2 + 1]) * 0.5f;
     }
 
     /**
@@ -401,14 +463,14 @@ public final class LandmarkEngine {
     public synchronized void getLipsVertices(float[] vertexPoints, int faceIndex) {
         // 嘴唇一共20个顶点，大小必须为40
         if (vertexPoints == null || vertexPoints.length < 40
-                || faceIndex >= mFaceArrays.size() || mFaceArrays.get(faceIndex) == null) {
+                || faceIndex >= mDecodableFrame.size() || mDecodableFrame.get(faceIndex) == null) {
             return;
         }
         // 复制84 ~ 103共20个顶点坐标
         for (int i = 0; i < 20; i++) {
             // 顶点坐标
-            vertexPoints[i * 2] = mFaceArrays.get(faceIndex).vertexPoints[(84 + i) * 2];
-            vertexPoints[i * 2 + 1] = mFaceArrays.get(faceIndex).vertexPoints[(84 + i) * 2 + 1];
+            vertexPoints[i * 2] = mDecodableFrame.get(faceIndex).vertexPoints[(84 + i) * 2];
+            vertexPoints[i * 2 + 1] = mDecodableFrame.get(faceIndex).vertexPoints[(84 + i) * 2 + 1];
         }
     }
 
@@ -419,26 +481,26 @@ public final class LandmarkEngine {
      */
     public synchronized void getBrightEyeVertices(float[] vertexPoints, int faceIndex) {
         if (vertexPoints == null || vertexPoints.length < 32
-                || faceIndex >= mFaceArrays.size() || mFaceArrays.get(faceIndex) == null) {
+                || faceIndex >= mDecodableFrame.size() || mDecodableFrame.get(faceIndex) == null) {
             return;
         }
         // 眼睛边沿部分 index = 0 ~ 11
         for (int i = 52; i < 64; i++) {
-            vertexPoints[(i - 52) * 2] = mFaceArrays.get(faceIndex).vertexPoints[i * 2];
-            vertexPoints[(i - 52) * 2 + 1] = mFaceArrays.get(faceIndex).vertexPoints[i * 2 + 1];
+            vertexPoints[(i - 52) * 2] = mDecodableFrame.get(faceIndex).vertexPoints[i * 2];
+            vertexPoints[(i - 52) * 2 + 1] = mDecodableFrame.get(faceIndex).vertexPoints[i * 2 + 1];
         }
 
-        vertexPoints[12 * 2] = mFaceArrays.get(faceIndex).vertexPoints[72 * 2];
-        vertexPoints[12 * 2 + 1] = mFaceArrays.get(faceIndex).vertexPoints[72 * 2 + 1];
+        vertexPoints[12 * 2] = mDecodableFrame.get(faceIndex).vertexPoints[72 * 2];
+        vertexPoints[12 * 2 + 1] = mDecodableFrame.get(faceIndex).vertexPoints[72 * 2 + 1];
 
-        vertexPoints[13 * 2] = mFaceArrays.get(faceIndex).vertexPoints[73 * 2];
-        vertexPoints[13 * 2 + 1] = mFaceArrays.get(faceIndex).vertexPoints[73 * 2 + 1];
+        vertexPoints[13 * 2] = mDecodableFrame.get(faceIndex).vertexPoints[73 * 2];
+        vertexPoints[13 * 2 + 1] = mDecodableFrame.get(faceIndex).vertexPoints[73 * 2 + 1];
 
-        vertexPoints[14 * 2] = mFaceArrays.get(faceIndex).vertexPoints[75 * 2];
-        vertexPoints[14 * 2 + 1] = mFaceArrays.get(faceIndex).vertexPoints[75 * 2 + 1];
+        vertexPoints[14 * 2] = mDecodableFrame.get(faceIndex).vertexPoints[75 * 2];
+        vertexPoints[14 * 2 + 1] = mDecodableFrame.get(faceIndex).vertexPoints[75 * 2 + 1];
 
-        vertexPoints[15 * 2] = mFaceArrays.get(faceIndex).vertexPoints[76 * 2];
-        vertexPoints[15 * 2 + 1] = mFaceArrays.get(faceIndex).vertexPoints[76 * 2 + 1];
+        vertexPoints[15 * 2] = mDecodableFrame.get(faceIndex).vertexPoints[76 * 2];
+        vertexPoints[15 * 2 + 1] = mDecodableFrame.get(faceIndex).vertexPoints[76 * 2 + 1];
 
     }
 
@@ -449,12 +511,12 @@ public final class LandmarkEngine {
      */
     public synchronized void getBeautyTeethVertices(float[] vertexPoints, int faceIndex) {
         if (vertexPoints == null || vertexPoints.length < 24
-                || faceIndex >= mFaceArrays.size() || mFaceArrays.get(faceIndex) == null) {
+                || faceIndex >= mDecodableFrame.size() || mDecodableFrame.get(faceIndex) == null) {
             return;
         }
         for (int i = 84; i < 96; i++) {
-            vertexPoints[(i - 84) * 2] = mFaceArrays.get(faceIndex).vertexPoints[i * 2];
-            vertexPoints[(i - 84) * 2 + 1] = mFaceArrays.get(faceIndex).vertexPoints[i * 2 + 1];
+            vertexPoints[(i - 84) * 2] = mDecodableFrame.get(faceIndex).vertexPoints[i * 2];
+            vertexPoints[(i - 84) * 2 + 1] = mDecodableFrame.get(faceIndex).vertexPoints[i * 2 + 1];
         }
     }
 }
