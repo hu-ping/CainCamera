@@ -1,12 +1,15 @@
 package com.smart.smartbeauty.filter;
 
 import android.content.Context;
+import android.opengl.GLES30;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.MotionEvent;
 
 
 import com.badlogic.gdx.math.Vector3;
+import com.cgfay.filterlibrary.glfilter.base.GLImageAdjustFilter;
+import com.cgfay.filterlibrary.glfilter.base.GLImageAudioFilter;
 import com.cgfay.filterlibrary.glfilter.base.GLImageDepthBlurFilter;
 import com.cgfay.filterlibrary.glfilter.base.GLImageFilter;
 import com.cgfay.filterlibrary.glfilter.base.GLImageOESInputFilter;
@@ -26,9 +29,13 @@ import com.cgfay.filterlibrary.glfilter.stickers.GestureHelp;
 import com.cgfay.filterlibrary.glfilter.stickers.StaticStickerNormalFilter;
 import com.cgfay.filterlibrary.glfilter.stickers.bean.DynamicSticker;
 import com.cgfay.filterlibrary.glfilter.utils.OpenGLUtils;
+import com.cgfay.filterlibrary.glfilter.utils.Rotation;
 import com.cgfay.filterlibrary.glfilter.utils.TextureRotationUtils;
 import com.cgfay.filterlibrary.landmark.LandmarkEngine;
+import com.smart.smartbeauty.api.SmartBeautyRender;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 /**
@@ -66,6 +73,10 @@ public final class SmartRenderManager {
     private FloatBuffer mScaleVertexBuffer;
     private FloatBuffer mScaleTextureBuffer;
 
+    // 用于显示裁剪的纹理顶点缓冲
+    private FloatBuffer mAdjustVertexBuffer;
+    private FloatBuffer mAdjustTextureBuffer;
+
     // 视图宽高
     private int mViewWidth, mViewHeight;
     // 输入图像大小
@@ -80,6 +91,7 @@ public final class SmartRenderManager {
 
     private float mXScale = 0;
     private float mYScale = 0;
+    private SmartBeautyRender.ITackImageCallback mImageCallback = null;
 
     /**
      * 初始化
@@ -141,6 +153,16 @@ public final class SmartRenderManager {
             mScaleTextureBuffer.clear();
             mScaleTextureBuffer = null;
         }
+
+
+        if (mAdjustVertexBuffer != null) {
+            mAdjustVertexBuffer.clear();
+            mAdjustVertexBuffer = null;
+        }
+        if (mAdjustTextureBuffer != null) {
+            mAdjustTextureBuffer.clear();
+            mAdjustTextureBuffer = null;
+        }
     }
 
     /**
@@ -156,6 +178,9 @@ public final class SmartRenderManager {
 
         mScaleVertexBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.CubeVertices);
         mScaleTextureBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.TextureVertices);
+
+        mAdjustVertexBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.CubeVertices);
+        mAdjustTextureBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.TextureVertices);
     }
 
     /**
@@ -184,6 +209,9 @@ public final class SmartRenderManager {
         mFilterArrays.put(SmartRenderIndex.DisplayIndex, new GLImageFilter(context));
         // 人脸关键点调试
         mFilterArrays.put(SmartRenderIndex.FacePointIndex, new GLImageFacePointsFilter(context));
+
+        //图像角度调整
+        mFilterArrays.put(SmartRenderIndex.AdjustImageIndex, new GLImageAdjustFilter(context));
     }
 
     /**
@@ -358,8 +386,28 @@ public final class SmartRenderManager {
         // 显示输出，需要调整视口大小
         mFilterArrays.get(SmartRenderIndex.DisplayIndex).drawFrame(currentTexture, mScaleVertexBuffer, mScaleTextureBuffer);
 
+
+        //调整纹理顶点，渲染到FrameBuffer中，使用GLES30.glReadPixels从opengl中读取rgb数据，来解决直接读取opengl数据图像倒置的问题。。
+        if (mImageCallback != null) {
+            Log.e(TAG, "mImageCallback");
+            GLImageAdjustFilter filter = (GLImageAdjustFilter) mFilterArrays.get(SmartRenderIndex.AdjustImageIndex);
+            filter.setImageCallback(mImageCallback);
+
+            filter.drawFrameBuffer(currentTexture, mAdjustVertexBuffer, mAdjustTextureBuffer);
+
+            mImageCallback = null;
+        }
+
+
+
         return currentTexture;
     }
+
+
+    public void getCurrentImage(SmartBeautyRender.ITackImageCallback callback) {
+        mImageCallback = callback;
+    }
+
 
     /**
      * 绘制调试用的人脸关键点
@@ -417,6 +465,12 @@ public final class SmartRenderManager {
                 if (i < SmartRenderIndex.DisplayIndex) {
                     mFilterArrays.get(i).initFrameBuffer(mTextureWidth, mTextureHeight);
                 }
+
+                //TODO: huping add.
+                if(i == SmartRenderIndex.AdjustImageIndex) {
+                    mFilterArrays.get(i).initFrameBuffer(mTextureWidth, mTextureHeight);
+                }
+
                 mFilterArrays.get(i).onDisplaySizeChanged(mViewWidth, mViewHeight);
             }
         }
@@ -489,6 +543,7 @@ public final class SmartRenderManager {
 
 
         adjustScaleCoordinateSize();
+        adjustFilpCoordinateSize();
     }
 
 
@@ -526,6 +581,39 @@ public final class SmartRenderManager {
         mScaleTextureBuffer.clear();
         mScaleTextureBuffer.put(textureCoord).position(0);
     }
+
+
+
+    /**
+     * 调整由于surface的大小与SurfaceView大小不一致带来的显示问题
+     */
+    private void adjustFilpCoordinateSize() {
+        float[] textureCoord = null;
+        float[] vertexCoord = null;
+        float[] textureVertices = TextureRotationUtils.getRotation(Rotation.ROTATION_180, true, false);
+        float[] vertexVertices = TextureRotationUtils.CubeVertices;
+
+        textureCoord = new float[] {
+                textureVertices[0], textureVertices[1],
+                textureVertices[2], textureVertices[3],
+                textureVertices[4], textureVertices[5],
+                textureVertices[6], textureVertices[7],
+        };
+
+
+        if (vertexCoord == null) {
+            vertexCoord = vertexVertices;
+        }
+        if (textureCoord == null) {
+            textureCoord = textureVertices;
+        }
+        // 更新VertexBuffer 和 TextureBuffer
+        mAdjustVertexBuffer.clear();
+        mAdjustVertexBuffer.put(vertexCoord).position(0);
+        mAdjustTextureBuffer.clear();
+        mAdjustTextureBuffer.put(textureCoord).position(0);
+    }
+
 
 
 

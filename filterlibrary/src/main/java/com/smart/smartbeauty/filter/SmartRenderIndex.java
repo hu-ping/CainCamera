@@ -14,4 +14,6 @@ package com.smart.smartbeauty.filter;
     public static final int VignetteIndex = 7;      // 暗角索引
     public static final int DisplayIndex = 8;       // 显示索引
     public static final int FacePointIndex = 9;     // 人脸关键点索引
+
+    public static final int AdjustImageIndex = 10;     // 人脸关键点索引
 }

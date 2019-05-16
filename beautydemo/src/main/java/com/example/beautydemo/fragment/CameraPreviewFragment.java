@@ -484,7 +484,7 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
                 nextCaptureStatisticsTime = currentTime + UNIT_TIME_INTERVAL;
             }
             if(currentTime > nextCaptureStatisticsTime) {
-                Log.e(TAG,  "statistics onPreviewFrame frame count:" + captureFrameCount);
+//                Log.e(TAG,  "statistics onPreviewFrame frame count:" + captureFrameCount);
                 nextCaptureStatisticsTime = currentTime + UNIT_TIME_INTERVAL;
                 captureFrameCount = 0;
             }

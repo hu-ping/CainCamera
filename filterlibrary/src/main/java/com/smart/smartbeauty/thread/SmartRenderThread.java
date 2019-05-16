@@ -5,8 +5,6 @@ import android.graphics.SurfaceTexture;
 import android.opengl.GLES30;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.util.Log;
-import android.util.Size;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 
@@ -21,8 +19,6 @@ import com.cgfay.filterlibrary.glfilter.utils.OpenGLUtils;
 import com.smart.smartbeauty.api.SmartBeautyRender;
 import com.smart.smartbeauty.api.SmartRenderParam;
 import com.smart.smartbeauty.filter.SmartRenderManager;
-
-import java.nio.ByteBuffer;
 
 /**
  * 渲染线程
@@ -258,9 +254,12 @@ public class SmartRenderThread extends HandlerThread {
                 return;
             }
 
-            ByteBuffer buffer = mDisplaySurface.getCurrentFrame();
-            callback.onCaptured(buffer,
-                    mDisplaySurface.getWidth(), mDisplaySurface.getHeight());
+            mRenderManager.getCurrentImage(callback);
+
+
+//            ByteBuffer buffer = mDisplaySurface.getCurrentImage();
+//            callback.onCaptured(buffer,
+//                    mDisplaySurface.getWidth(), mDisplaySurface.getHeight());
         }
     }
 
